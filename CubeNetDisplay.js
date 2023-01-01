@@ -63,18 +63,17 @@ class CubeNetDisplay {
         context.fillRect(cubeFace.x, cubeFace.y, cubeFace.width, cubeFace.height);
         for(let i = 0; i < 9; i++) {
             let sticker = cubeFace.getStickerI(i);
-            let stickerStartX = faceStartX + ((i % 3) * singleFaceDimension / 3);
-            let stickerStartY = faceStartY + ((i / 3) * singleFaceDimension / 3);
-            paintSticker(context, stickerStartX, stickerStartY, sticker);
+            let stickerStartX = faceStartX + ((i % 3) * Math.floor(this.#faceWidth / 3.0));
+            let stickerStartY = faceStartY + (Math.floor(i / 3) * Math.floor(this.#faceWidth / 3.0));
+            this.paintSticker(context, stickerStartX, stickerStartY, sticker);
         }
     }
 
     paintSticker (context, stickerStartX, stickerStartY, sticker) {
-        let displayColor = sticker.color;
-        context.fillRect(displayColor);
+        context.fillStyle = sticker.color;
         
         sticker.setBounds(stickerStartX + this.#stickerBorderWidth, stickerStartY + this.#stickerBorderWidth,
-                (this.#faceWidth - (3 * this.#stickerBorderWidth )) / 3,
+                (this.#faceWidth - (3 * this.#stickerBorderWidth)) / 3,
                 (this.#faceWidth  - (3 * this.#stickerBorderWidth)) / 3);
         context.fillRect(sticker.x, sticker.y, sticker.width, sticker.height);
         //paintMemo(g, sticker);

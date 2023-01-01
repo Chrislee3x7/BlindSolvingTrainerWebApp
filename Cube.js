@@ -29,7 +29,6 @@ class Cube {
         this.#edgePieces = new Map();
 
         for (let i = 0; i < 6; i++) {
-            console.log(this.defaultColorScheme[0]);
             this.#cubeFaces[i] = new CubeFace(this.defaultColorScheme[i]);
         }
         //loadMemoScheme();

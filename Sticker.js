@@ -8,11 +8,12 @@ class Sticker extends Rectangle {
     #editModeOn;
 
     constructor(color, memoChar, pieceType) {
-        this.color = color;
-        this.memoChar = memoChar;
-        this.pieceType = pieceType;
+        super();
+        this.#color = color;
+        this.#memoChar = memoChar;
+        this.#pieceType = pieceType;
         // default should not be in edit mode
-        this.editModeOn = false;
+        this.#editModeOn = false;
     }
 
     get color() {
