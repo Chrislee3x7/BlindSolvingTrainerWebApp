@@ -3,6 +3,7 @@ class CubeNetDisplay {
     #faceWidth;
     #stickerWidth;
     #stickerBorderWidth;
+    #memoEditMode;
     
     cube;
     canvas;
@@ -10,6 +11,7 @@ class CubeNetDisplay {
     constructor(cube) {
         this.cube = cube;
         this.canvas = document.getElementById("cube-net-display");
+        this.#memoEditMode = PieceType.Corner;
     }
 
     updatePanelDimension() {
@@ -76,6 +78,27 @@ class CubeNetDisplay {
                 (this.#faceWidth - (3 * this.#stickerBorderWidth)) / 3,
                 (this.#faceWidth  - (3 * this.#stickerBorderWidth)) / 3);
         context.fillRect(sticker.x, sticker.y, sticker.width, sticker.height);
-        //paintMemo(g, sticker);
+        this.paintMemo(context, sticker);
+    }
+
+    paintMemo(context, sticker) {
+        if (sticker.pieceType != this.#memoEditMode) {
+            return;
+        }
+
+        context.font = `${this.#stickerWidth / 2}px Helvetica`;
+        context.fillStyle = "#000000";
+        //context.fillStyle = "#FA5E5E";
+        // if (sticker.getConflicted()) {
+        //     context.fillStyle("#FA5E5E");
+        // } else {
+        //     context.fillStyle("#000000");
+        // }
+        context.alignText = "center";
+        context.fillText(sticker.memoChar, sticker.x + (this.#stickerWidth / 2), sticker.y + this.#stickerWidth);
+    }
+
+    setMemoEditMode(memoEditMode) {
+        this.#memoEditMode = memoEditMode;
     }
 }

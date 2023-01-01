@@ -6,6 +6,7 @@ class Sticker extends Rectangle {
     #memoChar;
     #pieceType;
     #editModeOn;
+    #conflicted;
 
     constructor(color, memoChar, pieceType) {
         super();
@@ -14,9 +15,30 @@ class Sticker extends Rectangle {
         this.#pieceType = pieceType;
         // default should not be in edit mode
         this.#editModeOn = false;
+        this.#conflicted = false;
     }
 
     get color() {
         return this.#color;
+    }
+
+    get pieceType() {
+        return this.#pieceType;
+    }
+
+    get memoChar() {
+        return this.#memoChar;
+    }
+
+    get conflicted() {
+        return this.#conflicted;
+    }
+
+    set memoChar(c) {
+        this.#memoChar = c;
+    }
+
+    set conflicted(b) {
+        this.#conflicted = b;
     }
 }

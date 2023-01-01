@@ -41,6 +41,14 @@ class CubeFace extends Rectangle {
     getStickerI(i) {
         return this.#allStickers[i];
     }
+
+    getCornerStickerI(i) {
+        return this.#cornerStickers[i];
+    }
+
+    getEdgeStickerI(i) {
+        return this.#edgeStickers[i];
+    }
     
     get cornerStickers() {
         return this.#cornerStickers;

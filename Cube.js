@@ -1,12 +1,20 @@
 class Cube {
 
-    defaultColorScheme =
+    static defaultColorScheme =
             ["#FFFFFF", // white
             "#FF8708", // orange
             "#09CF02", // green
             "#EB2902", // red
             "#0877FF", // blue
             "#FFFF00"]; // yellow
+
+    static defaultMemoScheme = 
+        "A0A0B0B0C0C0D0D0" +
+        "E0E0F0F0G0G0H0H0" +
+        "I0I0J0J0K0K0L0L0" +
+        "M0M0N0N0O0O0P0P0" +
+        "Q0Q0R0R0S0S0T0T0" +
+        "U0U0V0V0W0W0X0X0";
 
     static defaultMemos = [
         ['A', 'B', 'C', 'D'],
@@ -29,10 +37,37 @@ class Cube {
         this.#edgePieces = new Map();
 
         for (let i = 0; i < 6; i++) {
-            this.#cubeFaces[i] = new CubeFace(this.defaultColorScheme[i]);
+            this.#cubeFaces[i] = new CubeFace(Cube.defaultColorScheme[i]);
         }
-        //loadMemoScheme();
+        this.#loadMemoScheme();
         //this.#setPieces();
+    }
+
+    #loadMemoScheme() {
+        let memoScheme = localStorage.getItem("memoScheme");
+        if (memoScheme == null) { // if no such key exists...
+            // set it in local storage
+            localStorage.setItem("memoScheme", Cube.defaultMemoScheme);
+            // load in default memo scheme
+            memoScheme = localStorage.getItem("memoScheme");
+        }
+        for (let i = 0; i < memoScheme.length / 16; i++) {
+            for (let j = 0; j < 4; j++) {
+                let currCubeFace = this.#cubeFaces[Math.floor(i)]; // get the correct cube face
+                
+                let cornerStickerJ = currCubeFace.getCornerStickerI(j);
+                cornerStickerJ.memoChar = memoScheme.charAt((i * 16) + (j * 4));
+                if (memoScheme.charAt((i * 16) + (j * 4) + 1)) {
+                    cornerStickerJ.conflicted = true;
+                }
+                let edgeStickerJ = currCubeFace.getEdgeStickerI(j);
+                edgeStickerJ.memoChar = memoScheme.charAt((i * 16) + (j * 4) + 2);
+                if (memoScheme.charAt((i * 16) + (j * 4) + 3)) {
+                    edgeStickerJ.conflicted = true;
+                }
+            }
+        }
+        
     }
 
      // Hardcoded values from cubeFaces. should not be changed
