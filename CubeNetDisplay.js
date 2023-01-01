@@ -86,16 +86,23 @@ class CubeNetDisplay {
             return;
         }
 
+        let memoChar = sticker.memoChar;
         context.font = `${this.#stickerWidth / 2}px Helvetica`;
-        context.fillStyle = "#000000";
-        //context.fillStyle = "#FA5E5E";
-        // if (sticker.getConflicted()) {
-        //     context.fillStyle("#FA5E5E");
-        // } else {
-        //     context.fillStyle("#000000");
-        // }
-        context.alignText = "center";
-        context.fillText(sticker.memoChar, sticker.x + (this.#stickerWidth / 2), sticker.y + this.#stickerWidth);
+
+        if (sticker.conflicted === true) {
+            context.fillStyle = "#FA5E5E";
+        } else {
+            context.fillStyle = "#000000";
+        }
+
+        console.log((memoChar));
+        console.log(context.measureText(memoChar));
+
+        let charMetrics = context.measureText(memoChar);
+        let charWidth = charMetrics.width;
+        let charHeight = charMetrics.actualBoundingBoxAscent;
+
+        context.fillText(memoChar, sticker.x + (this.#stickerWidth / 2) - (charWidth / 2), sticker.y + (this.#stickerWidth / 2) + (charHeight / 2));
     }
 
     setMemoEditMode(memoEditMode) {

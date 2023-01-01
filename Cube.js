@@ -57,12 +57,12 @@ class Cube {
                 
                 let cornerStickerJ = currCubeFace.getCornerStickerI(j);
                 cornerStickerJ.memoChar = memoScheme.charAt((i * 16) + (j * 4));
-                if (memoScheme.charAt((i * 16) + (j * 4) + 1)) {
+                if (memoScheme.charAt((i * 16) + (j * 4) + 1) == 1) {
                     cornerStickerJ.conflicted = true;
                 }
                 let edgeStickerJ = currCubeFace.getEdgeStickerI(j);
                 edgeStickerJ.memoChar = memoScheme.charAt((i * 16) + (j * 4) + 2);
-                if (memoScheme.charAt((i * 16) + (j * 4) + 3)) {
+                if (memoScheme.charAt((i * 16) + (j * 4) + 3) == 1) {
                     edgeStickerJ.conflicted = true;
                 }
             }
