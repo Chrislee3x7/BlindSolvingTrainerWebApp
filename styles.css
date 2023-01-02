@@ -14,6 +14,8 @@ body {
 #title-display {
     color:rgb(80, 80, 177);
     text-align: left;
+    border-color: gold;
+    border-style: solid;
 }
 
 #memo-setup-panel {
@@ -21,7 +23,6 @@ body {
     padding: 0;
     width: 100vw;
     height: 100vh;
-    text-align: center;
 
     border-color: aqua;
     border-style: solid;
@@ -43,11 +44,11 @@ body {
 }
 
 #cube-net-display {
-    position: relative;
+    /* position: relative;
     top: 50%;
     left: 50%;
     -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); */
 
     border-style: solid;
 }

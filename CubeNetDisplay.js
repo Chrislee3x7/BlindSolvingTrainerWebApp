@@ -37,8 +37,12 @@ class CubeNetDisplay {
         const sWidth = this.canvas.parentElement.clientWidth;
         const sHeight = this.canvas.parentElement.clientHeight;
     
-        this.canvas.style.width = sWidth + "px";
-        this.canvas.style.height = sHeight + "px";
+        // this.canvas.style.width = sWidth + "px";
+        // this.canvas.style.height = sHeight + "px";
+
+        this.canvas.style.width = "80%";
+        this.canvas.style.height = "80%";
+        
     
         this.#windowScale = window.devicePixelRatio;
         this.canvas.width = sWidth * this.#windowScale;
