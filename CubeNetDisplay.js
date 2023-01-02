@@ -4,7 +4,8 @@ class CubeNetDisplay {
     #stickerWidth;
     #stickerBorderWidth;
     #memoEditMode;
-    
+    #windowScale;
+
     cube;
     canvas;
 
@@ -15,36 +16,42 @@ class CubeNetDisplay {
     }
 
     updatePanelDimension() {
-        this.#faceWidth = this.canvas.width / 14;
-        if (this.canvas.height / 4 < this.#faceWidth) {
-            this.#faceWidth = this.canvas.height / 4;
+        this.#faceWidth = Math.floor(this.canvas.width / (5 * this.#windowScale));
+        if (Math.floor(this.canvas.height / (4 * this.#windowScale)) < this.#faceWidth) {
+            this.#faceWidth = Math.floor(this.canvas.height / (4 * this.#windowScale));
         }
-        this.#stickerWidth = this.#faceWidth / 3;
-        this.#stickerBorderWidth = this.#faceWidth / 30;
+        this.#stickerWidth = Math.floor(this.#faceWidth / 3);
+        this.#stickerBorderWidth = Math.floor(this.#faceWidth / 30);
         this.#faceWidth = (3 * this.#stickerWidth + 3 * this.#stickerBorderWidth);
     }
 
     paintCubeNet() {
         // Below is to make sure canvas scales correctly to make non-blurry lines
+        console.log(this.canvas);
+        this.canvas = document.getElementById("cube-net-display");
         let context = this.canvas.getContext("2d");
         
-        const sWidth = 1000;
-        const sHeight = 500;
+        // const sWidth = window.innerWidth * 0.65;
+        // const sHeight = window.innerHeight * 0.65;
+        
+        const sWidth = this.canvas.parentElement.clientWidth;
+        const sHeight = this.canvas.parentElement.clientHeight;
     
         this.canvas.style.width = sWidth + "px";
         this.canvas.style.height = sHeight + "px";
     
-        let scale = window.devicePixelRatio;
-        this.canvas.width = sWidth * scale;
-        this.canvas.height = sHeight * scale;
+        this.#windowScale = window.devicePixelRatio;
+        this.canvas.width = sWidth * this.#windowScale;
+        this.canvas.height = sHeight * this.#windowScale;
+
     
-        context.scale(scale, scale);
+        context.scale(this.#windowScale, this.#windowScale);
         // canvas set up ends here
 
         this.updatePanelDimension();
     
-        let centerFaceTopLeftCornerX = (this.canvas.width / (2 * scale)) - (this.#faceWidth * 2);
-        let centerFaceTopLeftCornerY = (this.canvas.height / (2 * scale)) - (this.#faceWidth / 2);
+        let centerFaceTopLeftCornerX = Math.floor(this.canvas.width / (2 * this.#windowScale)) - (this.#faceWidth * 2);
+        let centerFaceTopLeftCornerY = Math.floor(this.canvas.height / (2 * this.#windowScale)) - Math.floor(this.#faceWidth / 2);
         
         this.paintCubeFace(context, centerFaceTopLeftCornerX + this.#faceWidth, centerFaceTopLeftCornerY - this.#faceWidth, 0);
         this.paintCubeFace(context, centerFaceTopLeftCornerX, centerFaceTopLeftCornerY, 1);
@@ -75,8 +82,8 @@ class CubeNetDisplay {
         context.fillStyle = sticker.color;
         
         sticker.setBounds(stickerStartX + this.#stickerBorderWidth, stickerStartY + this.#stickerBorderWidth,
-                (this.#faceWidth - (3 * this.#stickerBorderWidth)) / 3,
-                (this.#faceWidth  - (3 * this.#stickerBorderWidth)) / 3);
+                Math.floor((this.#faceWidth - (3 * this.#stickerBorderWidth)) / 3),
+                Math.floor((this.#faceWidth  - (3 * this.#stickerBorderWidth)) / 3));
         context.fillRect(sticker.x, sticker.y, sticker.width, sticker.height);
         this.paintMemo(context, sticker);
     }
@@ -95,12 +102,12 @@ class CubeNetDisplay {
             context.fillStyle = "#000000";
         }
 
-        console.log((memoChar));
-        console.log(context.measureText(memoChar));
+        // console.log((memoChar));
+        // console.log(context.measureText(memoChar));
 
         let charMetrics = context.measureText(memoChar);
         let charWidth = charMetrics.width;
-        let charHeight = charMetrics.actualBoundingBoxAscent;
+        let charHeight = charMetrics.fontBoundingBoxAscent;
 
         context.fillText(memoChar, sticker.x + (this.#stickerWidth / 2) - (charWidth / 2), sticker.y + (this.#stickerWidth / 2) + (charHeight / 2));
     }

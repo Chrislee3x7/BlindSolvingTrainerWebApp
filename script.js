@@ -6,10 +6,21 @@ function resetMemoSchemeButtonClick() {
     
 }
 
+let cubeNetDisplay;
+
 function main() {
     let cube = new Cube();
-    let cubeNetDisplay = new CubeNetDisplay(cube);
+    cubeNetDisplay = new CubeNetDisplay(cube);
     cubeNetDisplay.paintCubeNet();
+    window.addEventListener("resize", repaintCubeNetDisplay);
+}
+
+function repaintCubeNetDisplay() {
+    cubeNetDisplay.paintCubeNet();
+}
+
+function memoEditModeButtonClick() {
+
 }
 
 function setUpCube() {
