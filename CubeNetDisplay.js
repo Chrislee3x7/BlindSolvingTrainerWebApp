@@ -9,10 +9,97 @@ class CubeNetDisplay {
     cube;
     canvas;
 
+    // mouse stuff:
+    #pressedSticker;
+    #editingSticker;
+    #editingMemo;
+
+    #editStickerDisplayTimer;
+
     constructor(cube) {
         this.cube = cube;
-        this.canvas = document.getElementById("cube-net-display");
         this.#memoEditMode = PieceType.Corner;
+
+        this.canvas = document.getElementById("cube-net-display");
+        this.canvas.onmousedown = (event) => {
+            let canvasRect = this.canvas.getBoundingClientRect();
+            let x = event.clientX - canvasRect.left;
+            let y = event.clientY - canvasRect.top;
+            
+            // return false in .every to "break"
+            cube.cubeFaces.forEach((face => {
+                if (!face.contains(x, y)) {
+                    // if click location is not within this face, skip the logic for this face
+                    return;
+                }
+                // otherwise get the sticker for this click loc
+                this.#pressedSticker = face.findStickerAtCoords(x, y);
+                //console.log(this.#pressedSticker.memoChar);
+                // break:
+                return false;
+            }).bind(this));
+        };
+
+        this.canvas.onmouseup = (event) => {
+            // no matter what, if there was a selected sticker before this click, it should no longer be selected
+            if (this.#editingSticker != null) {
+                this.turnOffEditMode(this.#editingSticker);
+                return;
+            }
+
+            let canvasRect = this.canvas.getBoundingClientRect();
+            let x = event.clientX - canvasRect.left;
+            let y = event.clientY - canvasRect.top;
+
+            let releasedSticker;
+            cube.cubeFaces.forEach((face => {
+                if (!face.contains(x, y)) {
+                    return;
+                }
+                releasedSticker = face.findStickerAtCoords(x, y);
+                if (this.#editingSticker == null && releasedSticker != null && releasedSticker == this.#pressedSticker && this.#pressedSticker.pieceType == this.#memoEditMode) {
+                    // if clickedSticker is not null and the stickerType matches the memoEditMode
+                    this.#editingSticker = releasedSticker;
+                    this.#pressedSticker = null;
+                    this.turnOnEditMode(this.#editingSticker);
+                }
+            }).bind(this));
+        }
+    }
+
+    turnOffEditMode(sticker) {
+        // change to sticker to turn itself off???
+        if (sticker == null) {
+            return;
+        }
+        clearInterval(this.#editStickerDisplayTimer);
+        sticker.editingMemo = false;
+        sticker.displayColor = sticker.color;
+
+        this.paintCubeNet();
+        this.#editingMemo = false;
+        this.#editingSticker = null;
+    }
+
+    turnOnEditMode(sticker) {
+        if (sticker == null) {
+            return;
+        }
+        this.#editingMemo = true;
+        sticker.editingMemo = true;
+
+        this.#editStickerDisplayTimer = setInterval(this.toggleEditingIndicator.bind(this), 500);
+
+    }
+
+    toggleEditingIndicator() {
+        if (this.#editingSticker.displayColor == this.#editingSticker.color) {
+            this.#editingSticker.displayColor = Sticker.blinkColor;
+        }
+        else {
+            this.#editingSticker.displayColor = this.#editingSticker.color;
+        }
+        this.paintCubeNet();
     }
 
     updatePanelDimension() {
@@ -32,21 +119,13 @@ class CubeNetDisplay {
         
         const sWidth = this.canvas.parentElement.clientWidth;
         const sHeight = this.canvas.parentElement.clientHeight;
-
-        // console.log(this.canvas.parentElement.clientWidth);
-        // console.log(this.canvas.parentElement.clientHeight);
     
         this.canvas.style.width = sWidth + "px";
         this.canvas.style.height = sHeight + "px";
-
-        // this.canvas.style.width = "100%";
-        // this.canvas.style.height = "100%";
-        
     
         this.#windowScale = window.devicePixelRatio;
         this.canvas.width = sWidth * this.#windowScale;
         this.canvas.height = sHeight * this.#windowScale;
-
     
         context.scale(this.#windowScale, this.#windowScale);
         // canvas set up ends here
@@ -82,7 +161,7 @@ class CubeNetDisplay {
     }
 
     paintSticker (context, stickerStartX, stickerStartY, sticker) {
-        context.fillStyle = sticker.color;
+        context.fillStyle = sticker.displayColor;
         
         sticker.setBounds(stickerStartX + this.#stickerBorderWidth, stickerStartY + this.#stickerBorderWidth,
                 Math.floor((this.#faceWidth - (3 * this.#stickerBorderWidth)) / 3),

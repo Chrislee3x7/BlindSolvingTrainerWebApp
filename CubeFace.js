@@ -38,6 +38,17 @@ class CubeFace extends Rectangle {
             new Sticker(this.#color, '-', PieceType.CENTER), this.#edgeStickers[1], this.#cornerStickers[3], this.#edgeStickers[2], this.#cornerStickers[2]];
     }
 
+    findStickerAtCoords(x, y) {
+        // search through all stickers
+        for (let i = 0; i < 9; i++) {
+            let sticker = this.#allStickers[i];
+            if (sticker.contains(x, y)) {
+                return sticker;
+            }
+        }
+        return null;
+    }
+
     getStickerI(i) {
         return this.#allStickers[i];
     }
