@@ -27,21 +27,20 @@ class CubeNetDisplay {
 
     paintCubeNet() {
         // Below is to make sure canvas scales correctly to make non-blurry lines
-        console.log(this.canvas);
         this.canvas = document.getElementById("cube-net-display");
         let context = this.canvas.getContext("2d");
         
-        // const sWidth = window.innerWidth * 0.65;
-        // const sHeight = window.innerHeight * 0.65;
-        
         const sWidth = this.canvas.parentElement.clientWidth;
         const sHeight = this.canvas.parentElement.clientHeight;
-    
-        // this.canvas.style.width = sWidth + "px";
-        // this.canvas.style.height = sHeight + "px";
 
-        this.canvas.style.width = "80%";
-        this.canvas.style.height = "80%";
+        // console.log(this.canvas.parentElement.clientWidth);
+        // console.log(this.canvas.parentElement.clientHeight);
+    
+        this.canvas.style.width = sWidth + "px";
+        this.canvas.style.height = sHeight + "px";
+
+        // this.canvas.style.width = "100%";
+        // this.canvas.style.height = "100%";
         
     
         this.#windowScale = window.devicePixelRatio;
@@ -118,5 +117,16 @@ class CubeNetDisplay {
 
     setMemoEditMode(memoEditMode) {
         this.#memoEditMode = memoEditMode;
+    }
+
+    switchMemoEditMode() {
+        if (this.#memoEditMode == PieceType.Corner) {
+            this.#memoEditMode = PieceType.Edge;
+            return 'edges';
+        }
+        else {
+            this.#memoEditMode = PieceType.Corner;
+            return 'corners';
+        }
     }
 }

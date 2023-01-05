@@ -16,10 +16,12 @@
 
     </head>
     <body> 
-        <div class="d-sm-flex flex-column justify-content-start p-2" id="memo-setup-panel">
+        <div class="d-flex flex-column justify-content-start p-2" id="memo-setup-panel">
             <h1 id="title-display">blind solving trainer</h1>
-            <canvas id="cube-net-display"></canvas>
-            <div class="d-sm-flex flex-row" id="button-row">
+            <div class="d-flex" id="cube-net-display-panel">
+                <canvas class="d-flex" id="cube-net-display"></canvas>
+            </div>
+            <div class="d-flex flex-row" id="button-row">
                 <button type="button" class="menu-panel-button" id="change-memo-edit-mode-button" onclick="memoEditModeButtonClick()">corners</button>                
                 <button type="button" class="menu-panel-button" id="start-training-button" onclick="startButtonClick()">START</button>
                 <button type="button" class="menu-panel-button" id="reset-memo-scheme-button">reset memo scheme</button>
