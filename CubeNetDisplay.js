@@ -196,15 +196,16 @@ class CubeNetDisplay {
 
     setMemoEditMode(memoEditMode) {
         this.#memoEditMode = memoEditMode;
+        localStorage.setItem("memoEditMode", memoEditMode.toString());
     }
 
     switchMemoEditMode() {
         if (this.#memoEditMode == PieceType.Corner) {
-            this.#memoEditMode = PieceType.Edge;
+            this.setMemoEditMode(PieceType.Edge);
             return 'edges';
         }
         else {
-            this.#memoEditMode = PieceType.Corner;
+            this.setMemoEditMode(PieceType.Corner);
             return 'corners';
         }
     }
