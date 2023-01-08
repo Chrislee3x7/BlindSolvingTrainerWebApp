@@ -85,16 +85,17 @@ class CubeNetDisplay {
                 // if there are more than 2 conflicts, others still remain conflicted
                 let conflictPersist = persistentConflictsList.length > 2;
                 persistentConflictsList.forEach(sticker => {
-                    sticker.setConflicted(conflictPersist);
+                    sticker.conflicted = conflictPersist;
                 });
                 
                 this.#editingSticker.memoChar = keyChar.charAt(0);
                 // check for conflict stickers
                 let newConflicts = this.cube.getStickerConflicts(this.#editingSticker);
+                console.log("nnew conflicts: " + newConflicts);
                 // if this is the only sticker with the new memo, no new conflicts
                 let newConflict = newConflicts.length > 1;
                 newConflicts.forEach(sticker => {
-                    sticker.setConflicted(newConflict);
+                    sticker.conflicted = newConflict;
                 });
                 this.cube.saveMemoScheme();
                 this.paintCubeNet;
@@ -213,7 +214,6 @@ class CubeNetDisplay {
         let memoChar = sticker.memoChar;
         context.font = `${this.#stickerWidth / 2}px Helvetica`;
 
-        console.log(sticker.conflicted);
         if (sticker.conflicted == true) {
             context.fillStyle = "#FA5E5E";
         } else {

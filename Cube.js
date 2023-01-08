@@ -133,22 +133,23 @@ class Cube {
         let conflictsList = [];
         let stickerType = sourceSticker.pieceType;
         let conflictMemo = sourceSticker.memoChar;
-        if (stickerType == PieceType.CORNER) {
+        if (stickerType == PieceType.Corner) {
+            console.log("finding conflicts called");
             this.#cubeFaces.forEach(face => {
-                face.getCornerStickers(s => {
-                    if (s.getMemo() == conflictMemo) {
+                face.cornerStickers.forEach(s => {
+                    if (s.memoChar == conflictMemo) {
                         conflictsList.push(s);
                     }
-                }).bind(this);
-            }).bind(this);
-        } else if (stickerType == PieceType.EDGE) {
+                });
+            });
+        } else if (stickerType == PieceType.Edge) {
             this.#cubeFaces.forEach(face => {
-                face.getEdgeStickers(s => {
-                    if (s.getMemo() == conflictMemo) {
+                face.edgeStickers.forEach(s => {
+                    if (s.memoChar == conflictMemo) {
                         conflictsList.push(s);
                     }
-                }).bind(this);
-            }).bind(this);
+                });
+            });
         }
         return conflictsList;
     }
