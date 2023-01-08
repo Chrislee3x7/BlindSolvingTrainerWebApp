@@ -43,6 +43,11 @@ class Cube {
         //this.#setPieces();
     }
 
+    loadDefaultMemoScheme() {
+        localStorage.setItem("memoScheme", Cube.defaultMemoScheme);
+        this.#loadMemoScheme();
+    }
+
     #loadMemoScheme() {
         let memoScheme = localStorage.getItem("memoScheme");
         if (memoScheme == null) { // if no such key exists...
@@ -67,10 +72,33 @@ class Cube {
                 }
             }
         }
-        
     }
 
-     // Hardcoded values from cubeFaces. should not be changed
+    saveMemoScheme() {
+        let memoSchemeEncoding = [];
+        for (let i = 0; i < this.#cubeFaces.length; i++) {
+            let currFace = this.#cubeFaces[i];
+            let cornerStickerList = currFace.cornerStickers;
+            let edgeStickerList = currFace.edgeStickers;
+            for (let j = 0; j < cornerStickerList.length; j++) {
+                memoSchemeEncoding.push(cornerStickerList[j].memoChar);
+                if (cornerStickerList[j].conflicted) {
+                    memoSchemeEncoding.push("1");
+                } else {
+                    memoSchemeEncoding.push("0");
+                }
+                memoSchemeEncoding.push(edgeStickerList[j].memoChar);
+                if (edgeStickerList[j].conflicted) {
+                    memoSchemeEncoding.push("1");
+                } else {
+                    memoSchemeEncoding.push("0");
+                }
+            }
+        }
+        localStorage.setItem("memoScheme", memoSchemeEncoding.join(""));
+    }
+
+    // Hardcoded values from cubeFaces. should not be changed
     #setPieces() {
         // add cornerPieces
         this.#cornerPieces.set(0, getCornerPieceHelper(0,0,1,0,4,1));
@@ -99,6 +127,30 @@ class Cube {
         // add corner and edge pieces to all pieces
         allPieces.addAll(this.#cornerPieces.values());
         allPieces.addAll(this.#edgePieces.values());
+    }
+
+    getStickerConflicts(sourceSticker) {
+        let conflictsList = [];
+        let stickerType = sourceSticker.pieceType;
+        let conflictMemo = sourceSticker.memoChar;
+        if (stickerType == PieceType.CORNER) {
+            this.#cubeFaces.forEach(face => {
+                face.getCornerStickers(s => {
+                    if (s.getMemo() == conflictMemo) {
+                        conflictsList.push(s);
+                    }
+                }).bind(this);
+            }).bind(this);
+        } else if (stickerType == PieceType.EDGE) {
+            this.#cubeFaces.forEach(face => {
+                face.getEdgeStickers(s => {
+                    if (s.getMemo() == conflictMemo) {
+                        conflictsList.push(s);
+                    }
+                }).bind(this);
+            }).bind(this);
+        }
+        return conflictsList;
     }
 
     get cubeFaces() {

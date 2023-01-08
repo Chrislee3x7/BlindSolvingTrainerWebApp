@@ -1,7 +1,8 @@
 let cubeNetDisplay;
+let cube;
 
 function main() {
-    let cube = new Cube();
+    cube = new Cube();
     cubeNetDisplay = new CubeNetDisplay(cube);
     let storedMemoEditMode = localStorage.getItem("memoEditMode");
     if (storedMemoEditMode == PieceType.Edge.toString()) {
@@ -28,5 +29,6 @@ function startButtonClick() {
 }
 
 function resetMemoSchemeButtonClick() {
-    
+    cube.loadDefaultMemoScheme();
+    cubeNetDisplay.paintCubeNet();
 }

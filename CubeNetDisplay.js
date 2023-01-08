@@ -21,50 +21,85 @@ class CubeNetDisplay {
         this.#memoEditMode = PieceType.Corner;
 
         this.canvas = document.getElementById("cube-net-display");
-        this.canvas.onmousedown = (event) => {
-            let canvasRect = this.canvas.getBoundingClientRect();
-            let x = event.clientX - canvasRect.left;
-            let y = event.clientY - canvasRect.top;
-            
-            // return false in .every to "break"
-            cube.cubeFaces.forEach((face => {
-                if (!face.contains(x, y)) {
-                    // if click location is not within this face, skip the logic for this face
-                    return;
-                }
-                // otherwise get the sticker for this click loc
-                this.#pressedSticker = face.findStickerAtCoords(x, y);
-                //console.log(this.#pressedSticker.memoChar);
-                // break:
-                return false;
-            }).bind(this));
-        };
+        
+        this.canvas.onmousedown = this.mouseDown.bind(this);
+        this.canvas.onmouseup = this.mouseUp.bind(this);
+        this.canvas.setAttribute("tabindex", 0);
+        this.canvas.onkeydown = this.keyDown.bind(this);
+    }
 
-        this.canvas.onmouseup = (event) => {
-            // no matter what, if there was a selected sticker before this click, it should no longer be selected
-            if (this.#editingSticker != null) {
-                this.turnOffEditMode(this.#editingSticker);
+    mouseDown(event) {
+        let canvasRect = this.canvas.getBoundingClientRect();
+        let x = event.clientX - canvasRect.left;
+        let y = event.clientY - canvasRect.top;
+        
+        // return false in .every to "break"
+        this.cube.cubeFaces.forEach((face => {
+            if (!face.contains(x, y)) {
+                // if click location is not within this face, skip the logic for this face
                 return;
             }
+            // otherwise get the sticker for this click loc
+            this.#pressedSticker = face.findStickerAtCoords(x, y);
+            //console.log(this.#pressedSticker.memoChar);
+            // break:
+            return false;
+        }).bind(this));
+    }
 
-            let canvasRect = this.canvas.getBoundingClientRect();
-            let x = event.clientX - canvasRect.left;
-            let y = event.clientY - canvasRect.top;
+    mouseUp(event) {
+        // no matter what, if there was a selected sticker before this click, it should no longer be selected
+        if (this.#editingSticker != null) {
+            this.turnOffEditMode(this.#editingSticker);
+            return;
+        }
 
-            let releasedSticker;
-            cube.cubeFaces.forEach((face => {
-                if (!face.contains(x, y)) {
-                    return;
-                }
-                releasedSticker = face.findStickerAtCoords(x, y);
-                if (this.#editingSticker == null && releasedSticker != null && releasedSticker == this.#pressedSticker && this.#pressedSticker.pieceType == this.#memoEditMode) {
-                    // if clickedSticker is not null and the stickerType matches the memoEditMode
-                    this.#editingSticker = releasedSticker;
-                    this.#pressedSticker = null;
-                    // will turn on edit mode for the current editingSticker
-                    this.turnOnEditMode();
-                }
-            }).bind(this));
+        let canvasRect = this.canvas.getBoundingClientRect();
+        let x = event.clientX - canvasRect.left;
+        let y = event.clientY - canvasRect.top;
+
+        let releasedSticker;
+        this.cube.cubeFaces.forEach((face => {
+            if (!face.contains(x, y)) {
+                return;
+            }
+            releasedSticker = face.findStickerAtCoords(x, y);
+            if (this.#editingSticker == null && releasedSticker != null && releasedSticker == this.#pressedSticker && this.#pressedSticker.pieceType == this.#memoEditMode) {
+                // if clickedSticker is not null and the stickerType matches the memoEditMode
+                this.#editingSticker = releasedSticker;
+                this.#pressedSticker = null;
+                // will turn on edit mode for the current editingSticker
+                this.turnOnEditMode();
+            }
+        }).bind(this));
+    }
+
+    keyDown(event) {
+        console.log("keydown detected");
+        if (this.#editingMemo == true) {
+            let keyChar = event.key.toUpperCase();
+            if ((keyChar.charCodeAt(0) >= 65 && keyChar.charCodeAt(0) <= 90) && keyChar.charAt(0) != this.#editingSticker.memoChar) {
+                // if c is different from what it was previously, check if any conflicts
+                // are solved
+                let persistentConflictsList = this.cube.getStickerConflicts(this.#editingSticker);
+                // if there are more than 2 conflicts, others still remain conflicted
+                let conflictPersist = persistentConflictsList.length > 2;
+                persistentConflictsList.forEach(sticker => {
+                    sticker.setConflicted(conflictPersist);
+                });
+                
+                this.#editingSticker.memoChar = keyChar.charAt(0);
+                // check for conflict stickers
+                let newConflicts = this.cube.getStickerConflicts(this.#editingSticker);
+                // if this is the only sticker with the new memo, no new conflicts
+                let newConflict = newConflicts.length > 1;
+                newConflicts.forEach(sticker => {
+                    sticker.setConflicted(newConflict);
+                });
+                this.cube.saveMemoScheme();
+                this.paintCubeNet;
+            }
+            this.turnOffEditMode(this.#editingSticker);
         }
     }
 
@@ -178,7 +213,8 @@ class CubeNetDisplay {
         let memoChar = sticker.memoChar;
         context.font = `${this.#stickerWidth / 2}px Helvetica`;
 
-        if (sticker.conflicted === true) {
+        console.log(sticker.conflicted);
+        if (sticker.conflicted == true) {
             context.fillStyle = "#FA5E5E";
         } else {
             context.fillStyle = "#000000";
