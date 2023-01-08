@@ -61,35 +61,35 @@ class CubeNetDisplay {
                     // if clickedSticker is not null and the stickerType matches the memoEditMode
                     this.#editingSticker = releasedSticker;
                     this.#pressedSticker = null;
-                    this.turnOnEditMode(this.#editingSticker);
+                    // will turn on edit mode for the current editingSticker
+                    this.turnOnEditMode();
                 }
             }).bind(this));
         }
     }
 
-    turnOffEditMode(sticker) {
+    turnOffEditMode() {
         // change to sticker to turn itself off???
-        if (sticker == null) {
+        if (this.#editingSticker == null) {
             return;
         }
         clearInterval(this.#editStickerDisplayTimer);
-        sticker.editingMemo = false;
-        sticker.displayColor = sticker.color;
+        this.#editingSticker.editingMemo = false;
+        this.#editingSticker.displayColor = this.#editingSticker.color;
 
         this.paintCubeNet();
         this.#editingMemo = false;
         this.#editingSticker = null;
     }
 
-    turnOnEditMode(sticker) {
-        if (sticker == null) {
+    turnOnEditMode() {
+        if (this.#editingSticker == null) {
             return;
         }
         this.#editingMemo = true;
-        sticker.editingMemo = true;
+        this.#editingSticker.editingMemo = true;
 
         this.#editStickerDisplayTimer = setInterval(this.toggleEditingIndicator.bind(this), 500);
-
     }
 
     toggleEditingIndicator() {
@@ -200,6 +200,7 @@ class CubeNetDisplay {
     }
 
     switchMemoEditMode() {
+        this.turnOffEditMode();
         if (this.#memoEditMode == PieceType.Corner) {
             this.setMemoEditMode(PieceType.Edge);
             return 'edges';
