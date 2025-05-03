@@ -1,0 +1,11 @@
+.cube-face {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 5px;
+  
+  aspect-ratio: 1 / 1;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black;
+  background-color: black;
+}
