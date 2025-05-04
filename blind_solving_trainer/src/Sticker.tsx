@@ -1,33 +1,34 @@
 import React, { useState } from "react";
-import './Sticker.css'
+import './index.css'
+import { StickerId } from "./MemoScheme";
 
-export interface StickerProps {
+interface StickerProps {
   color: string;
-  memo: string;
+  memo?: string;
+  validMemo?: boolean;
+  showMemo?: boolean;
+  editingMemo?: boolean
+  onClick: () => void;
 }
 
+const editMemoColor = "cyan";
 
-const Sticker : React.FC<StickerProps> = ({
+
+const Sticker: React.FC<StickerProps> = ({
   color,
-  memo
+  memo = " ",
+  validMemo = true,
+  showMemo = false,
+  editingMemo = false,
+  onClick,
 }) => {
-  
-  const [displayColor, setDisplayColor] = useState(color)
-  
-  const handleClick = () => {
-    if (displayColor == color) {
-      setDisplayColor('blue')
-    } else {
-      setDisplayColor(color)
-    }
-  }
 
   return (
     <div
       className="sticker"
-      style={{ backgroundColor: displayColor }}
-      onClick={handleClick}>
-      <h3 className="" style={{ color: 'black' }}>{memo}</h3>
+      style={{ backgroundColor: editingMemo ? editMemoColor : color, userSelect: 'none' }}
+      onClick={onClick}>
+      <h3 style={{ background: validMemo ? 'none' : 'black', color: validMemo ? 'black' : 'red', userSelect: 'none', fontSize: '3vmin', borderRadius: '8px', padding: '4px' }}>{showMemo ? memo : " "}</h3>
     </div>
   );
 }
