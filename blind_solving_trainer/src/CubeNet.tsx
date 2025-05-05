@@ -18,7 +18,7 @@ interface CubeNetProps {
 const CubeNet: React.FC<CubeNetProps> = ({ memoMode, memoScheme, editingSticker, handleStickerClick }) => {
 
   return (
-    <div style={{ flex: 5, display: 'flex', justifyContent: 'center' }}>
+    <div style={{ flex: 5, display: 'flex', justifyContent: 'center', alignItems: 'center', aspectRatio: '4 / 3', maxHeight: '100vh' }}>
       <div className="cube-net">
         <div className="empty-cell"></div>
 
@@ -71,6 +71,8 @@ const CubeNet: React.FC<CubeNetProps> = ({ memoMode, memoScheme, editingSticker,
           editingSticker={editingSticker}
           onStickerClick={handleStickerClick}
         />
+        <div className="empty-cell"></div>
+        <div className="empty-cell"></div>
       </div>
     </div>
   );

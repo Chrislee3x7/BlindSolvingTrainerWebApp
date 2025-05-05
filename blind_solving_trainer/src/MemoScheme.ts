@@ -105,6 +105,19 @@ export namespace MemoSchemeUtils {
     return /^[a-zA-Z0-9]$/.test(memo);
   }
 
+  export const isValidMemoScheme = (memoScheme: MemoSchemeType): boolean => {
+    let faces: Face[] = Object.keys(memoScheme) as Face[];
+    for (let f of faces) {
+      let fmd: FaceMemoData = memoScheme[f];
+      for (let i = 0; i < 4; i++) {
+        if (!fmd.cornersValid[i] || !fmd.edgesValid[i]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   /**
    * Check memo scheme for validity and returns "validated" memoscheme
    * @param memoScheme the memo scheme to check

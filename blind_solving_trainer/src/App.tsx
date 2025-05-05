@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import CubeNet from './CubeNet'
 import { MemoSchemeType, MemoSchemeUtils, StickerId, StickerType } from './MemoScheme'
 import ControlPanel from './ControlPanel'
@@ -7,6 +8,9 @@ function App() {
   const [memoMode, setMemoMode] = useState<StickerType>(StickerType.CORNER)
   const [memoScheme, setMemoScheme] = useState<MemoSchemeType>(MemoSchemeUtils.createDefault());
   const [editingSticker, setEditingSticker] = useState<StickerId | null>(null);
+
+  const [alertMessage, setAlertMessage] = useState<string>("");
+  const [alertVisible, setAlertVisible] = useState<boolean>(false);
 
   // handle sticker click
   const handleStickerClick = useCallback((stickerId: StickerId | null) => {
@@ -38,6 +42,36 @@ function App() {
     [editingSticker]
   );
 
+  const toggleMemoMode = () => {
+    setMemoMode(prev => prev == StickerType.CORNER ? StickerType.EDGE : StickerType.CORNER)
+  }
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (alertVisible) {
+      timer = setTimeout(() => {
+        setAlertVisible(false);
+      }, 2000);
+    }
+
+    return () => clearTimeout(timer)
+  }, [alertVisible])
+
+  const createAlert = (msg: string) => {
+    setAlertMessage(msg)
+    setAlertVisible(true)
+  }
+
+  const startTraining = () => {
+    // check valid memo scheme
+    if (!MemoSchemeUtils.isValidMemoScheme(memoScheme)) {
+      createAlert("Cannot start training with an invalid memo scheme.");
+      return;
+    }
+
+    // Start training mode
+  }
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
 
@@ -46,27 +80,23 @@ function App() {
     };
   }, [handleKeyDown]);
 
-  const toggleMemoMode = () => {
-    setMemoMode(prev => prev == StickerType.CORNER ? StickerType.EDGE : StickerType.CORNER)
-  }
 
   return (
-    <div style={{
-      display: 'flex',
-      backgroundColor: 'rgb(175, 208, 191)',
-      height: '100vh',
-      // gap: '20px',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      alignContent: 'center',
-    }}>
+    <div className="flex bg-emerald-200 items-center h-lvh">
+      <Alert className={`dark transition-opacity duration-500 ${alertVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`} variant="destructive">
+        <AlertTitle>Error!</AlertTitle>
+        <AlertDescription>
+          {alertMessage}
+        </AlertDescription>
+      </Alert>
       <CubeNet memoMode={memoMode}
         memoScheme={memoScheme}
         editingSticker={editingSticker}
         handleStickerClick={handleStickerClick} />
       <ControlPanel toggleMemoMode={toggleMemoMode} memoMode={memoMode}
-        resetToDefaultMemoScheme={() => setMemoScheme(MemoSchemeUtils.createDefault())}
+        resetToDefaultMemoScheme={() => { setMemoScheme(MemoSchemeUtils.createDefault()); setEditingSticker(null) }}
+        startTraining={startTraining}
       />
     </div>
   )

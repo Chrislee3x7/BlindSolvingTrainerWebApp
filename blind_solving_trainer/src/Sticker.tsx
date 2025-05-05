@@ -26,9 +26,18 @@ const Sticker: React.FC<StickerProps> = ({
   return (
     <div
       className="sticker"
+      // style={{ backgroundColor: editingMemo ? editMemoColor : (validMemo ? color : "black"), userSelect: 'none' }}
       style={{ backgroundColor: editingMemo ? editMemoColor : color, userSelect: 'none' }}
       onClick={onClick}>
-      <h3 style={{ background: validMemo ? 'none' : 'black', color: validMemo ? 'black' : 'red', userSelect: 'none', fontSize: '3vmin', borderRadius: '8px', padding: '4px' }}>{showMemo ? memo : " "}</h3>
+      <h3 className="memo-label" style={{
+        background: validMemo ? 'none' : 'black',
+        color: validMemo ? 'black' : 'red',
+        userSelect: 'none',
+        borderRadius: '8px', padding: '0.5vh 0.5vw'
+      }}>
+        {showMemo ? memo : " "}
+      </h3>
+      {/* <h3 style={{ color: validMemo ? 'black' : color, userSelect: 'none', fontSize: '3vmin' }}>{showMemo ? memo : " "}</h3> */}
     </div>
   );
 }
