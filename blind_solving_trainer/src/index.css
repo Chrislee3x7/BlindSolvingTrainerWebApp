@@ -75,6 +75,19 @@
   display: flex;
 }
 
+/* Default layout: flex-row */
+.dynamic-vertical-layout {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Switch to column layout when aspect ratio is narrow */
+@media (max-aspect-ratio: 1 / 1) {
+  .dynamic-vertical-layout {
+    flex-direction: column;
+  }
+}
+
 @theme inline {
 
   --radius-sm: calc(var(--radius) - 4px);
