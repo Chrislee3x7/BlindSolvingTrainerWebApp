@@ -1,29 +1,48 @@
 import React from "react";
 import { Button } from "@/components/ui/button"
-import { StickerType } from "./MemoScheme";
+import { PieceType } from "./MemoScheme";
+import { useDialog } from "./dialog/useDialog";
+import { Label } from "./components/ui/label";
 
-interface ControlPanelProps {
-  memoMode: StickerType
+type ControlPanelProps = {
+  memoMode: PieceType
   toggleMemoMode: () => void
   resetToDefaultMemoScheme: () => void
   startTraining: () => void
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, resetToDefaultMemoScheme, startTraining }) => {
+
+  const { confirm: confirmResetMemoSchemeDialog } = useDialog();
+
+  const handleDefaultMemosClick = () => {
+    // show dialog to create game
+    confirmResetMemoSchemeDialog({
+      title: "Confirm Reset",
+      description: "Are you sure you want to reset your memo scheme to the default? You can't undo this action!",
+      actionLabel: "Confirm",
+      actionVariant: "destructive",
+      cancelLabel: "Cancel",
+      onConfirm: () => {
+        resetToDefaultMemoScheme();
+      }
+    });
+
+  }
+
   return (
     <div style={{ height: '100%', flex: 1, alignContent: 'center' }}>
-      <div className="bg-teal-700" style={{
-        display: 'flex', flexDirection: 'column', padding: "30px 30px", rowGap: "10px",
-        borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px"
+      <div className="bg-teal-700 rounded-l-3xl" style={{
+        display: 'flex', flexDirection: 'column', padding: "30px 30px", rowGap: "15px",
       }}>
-        <Button variant="destructive" onClick={resetToDefaultMemoScheme}>
-          <h2>default memos</h2>
+        <Button variant="destructive" onClick={handleDefaultMemosClick}>
+          <Label>Default Memos</Label>
         </Button>
         <Button onClick={toggleMemoMode}>
-          <h2>{memoMode}</h2>
+          <Label>{memoMode + 's'}</Label>
         </Button>
         <Button onClick={startTraining}>
-          <h2>start training</h2>
+          <Label>Start Training</Label>
         </Button>
       </div>
     </div>

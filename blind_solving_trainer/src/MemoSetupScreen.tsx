@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ControlPanel from "./ControlPanel";
 import CubeNet from "./CubeNet";
-import { MemoSchemeType, MemoSchemeUtils, StickerId, StickerType } from "./MemoScheme";
+import { MemoSchemeType, MemoSchemeUtils, StickerId, PieceType } from "./MemoScheme";
 
 interface MemoSetupScreenProps {
   memoScheme: MemoSchemeType;
@@ -10,7 +10,7 @@ interface MemoSetupScreenProps {
 };
 
 const MemoSetupScreen: React.FC<MemoSetupScreenProps> = ({ memoScheme, setMemoScheme, startTraining }) => {
-  const [memoMode, setMemoMode] = useState<StickerType>(StickerType.CORNER);
+  const [memoMode, setMemoMode] = useState<PieceType>(PieceType.CORNER);
 
   const [editingSticker, setEditingSticker] = useState<StickerId | null>(null);
 
@@ -52,7 +52,7 @@ const MemoSetupScreen: React.FC<MemoSetupScreenProps> = ({ memoScheme, setMemoSc
   }, [handleKeyDown]);
 
   const toggleMemoMode = () => {
-    setMemoMode(prev => prev == StickerType.CORNER ? StickerType.EDGE : StickerType.CORNER)
+    setMemoMode(prev => prev == PieceType.CORNER ? PieceType.EDGE : PieceType.CORNER)
   }
 
   return (

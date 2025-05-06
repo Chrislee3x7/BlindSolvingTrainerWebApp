@@ -3,13 +3,13 @@ import './index.css';
 import CubeFace from './CubeFace';
 import {
   Face,
-  StickerType,
+  PieceType,
   MemoSchemeType,
   StickerId,
 } from './MemoScheme';
 
 interface CubeNetProps {
-  memoMode: StickerType;
+  memoMode: PieceType;
   memoScheme: MemoSchemeType;
   editingSticker: StickerId | null;
   handleStickerClick: (stickerId: StickerId | null) => void;

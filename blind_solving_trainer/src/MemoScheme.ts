@@ -7,15 +7,15 @@ export enum Face {
   D = "D"
 }
 
-export enum StickerType {
-  CORNER = "corners",
-  EDGE = "edges",
-  CENTER = "center"
+export enum PieceType {
+  CORNER = "Corner",
+  EDGE = "Edge",
+  CENTER = "Center"
 }
 
 export type StickerId = {
   face: Face;
-  type: StickerType;
+  type: PieceType;
   idx: 0 | 1 | 2 | 3
 }
 
@@ -81,10 +81,10 @@ export namespace MemoSchemeUtils {
     const updatedMemoScheme: MemoSchemeType = JSON.parse(JSON.stringify(memoScheme));
     console.log(stickerId.type)
 
-    if (stickerId.type == StickerType.CORNER) {
+    if (stickerId.type == PieceType.CORNER) {
       console.log("in corner")
       updatedMemoScheme[stickerId.face].corners[stickerId.idx] = newMemo;
-    } else if (stickerId.type == StickerType.EDGE) {
+    } else if (stickerId.type == PieceType.EDGE) {
       console.log("in edge")
       updatedMemoScheme[stickerId.face].edges[stickerId.idx] = newMemo;
     } else {
