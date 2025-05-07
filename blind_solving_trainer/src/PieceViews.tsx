@@ -1,8 +1,6 @@
 
 export namespace PieceViews {
-  export const getRandomCornerPieceView = (colors: [string, string, string]) => { // colors are in clockwise order
-    let r = Math.floor((Math.random() * 3))
-
+  export const getRandomCornerPieceView = (colors: [string, string, string], orientation: number) => { // colors are in clockwise order
     return (
       <svg width="410" height="410" viewBox="0 0 410 410" fill="none" xmlns="http://www.w3.org/2000/svg">
         <mask id="mask0_7_158" style={{ maskType: "alpha" }} maskUnits="userSpaceOnUse" x="27" y="4" width="356" height="402">
@@ -10,22 +8,19 @@ export namespace PieceViews {
         </mask>
         <g mask="url(#mask0_7_158)">
           <path d="M43.6836 315.938C33.7828 310.222 27.6836 299.658 27.6836 288.226L27.6836 120.176C27.6836 108.744 33.7828 98.1795 43.6836 92.4633L189.219 8.43846C199.12 2.72221 211.318 2.72221 221.219 8.43846L366.754 92.4633C376.655 98.1795 382.754 108.744 382.754 120.176L382.754 288.226C382.754 299.658 376.655 310.222 366.754 315.938L221.219 399.963C211.318 405.68 199.12 405.68 189.219 399.963L43.6836 315.938Z" fill="black" />
-          <path d="M52.354 297.674C49.2657 295.888 47.3628 292.593 47.3602 289.025L47.257 145.931C47.2514 138.226 55.5938 133.41 62.2632 137.267L186.135 208.903C189.223 210.689 191.126 213.985 191.129 217.553L191.232 360.647C191.238 368.352 182.895 373.168 176.226 369.311L52.354 297.674Z" fill={colors[(0 + r) % 3]} />
-          <path d="M199.846 25.586C202.937 23.8045 206.743 23.8045 209.834 25.586L333.809 97.0438C340.484 100.891 340.484 110.524 333.809 114.371L209.834 185.829C206.743 187.611 202.937 187.611 199.846 185.829L75.8713 114.372C69.1963 110.524 69.1963 100.891 75.8713 97.0438L199.846 25.586Z" fill={colors[(1 + r) % 3]} />
-          <path d="M217.967 217.89C217.97 214.323 219.873 211.027 222.961 209.241L346.833 137.604C353.502 133.747 361.845 138.564 361.839 146.268L361.736 289.362C361.733 292.93 359.83 296.226 356.742 298.012L232.87 369.648C226.201 373.505 217.858 368.689 217.864 360.985L217.967 217.89Z" fill={colors[(2 + r) % 3]} />
+          <path d="M52.354 297.674C49.2657 295.888 47.3628 292.593 47.3602 289.025L47.257 145.931C47.2514 138.226 55.5938 133.41 62.2632 137.267L186.135 208.903C189.223 210.689 191.126 213.985 191.129 217.553L191.232 360.647C191.238 368.352 182.895 373.168 176.226 369.311L52.354 297.674Z" fill={colors[(0 + orientation) % 3]} />
+          <path d="M199.846 25.586C202.937 23.8045 206.743 23.8045 209.834 25.586L333.809 97.0438C340.484 100.891 340.484 110.524 333.809 114.371L209.834 185.829C206.743 187.611 202.937 187.611 199.846 185.829L75.8713 114.372C69.1963 110.524 69.1963 100.891 75.8713 97.0438L199.846 25.586Z" fill={colors[(1 + orientation) % 3]} />
+          <path d="M217.967 217.89C217.97 214.323 219.873 211.027 222.961 209.241L346.833 137.604C353.502 133.747 361.845 138.564 361.839 146.268L361.736 289.362C361.733 292.93 359.83 296.226 356.742 298.012L232.87 369.648C226.201 373.505 217.858 368.689 217.864 360.985L217.967 217.89Z" fill={colors[(2 + orientation) % 3]} />
         </g>
       </svg>
     );
   };
 
-  export const getRandomEdgePieceView = (colors: [string, string]) => {
-    let rOri = Math.floor((Math.random() * 3))
-    let rFace = Math.floor((Math.random() * 2))
+  export const getRandomEdgePieceView = (colors: [string, string], orientation: number) => {
+    let c1 = colors[(0 + orientation) % 2]
+    let c2 = colors[(1 + orientation) % 2]
 
-    let c1 = colors[(0 + rFace) % 2]
-    let c2 = colors[(1 + rFace) % 2]
-
-    if (rOri == 0) {
+    if (orientation % 3 == 0) {
       return (
         <svg width="410" height="410" viewBox="0 0 410 410" fill="none" xmlns="http://www.w3.org/2000/svg">
           <mask id="mask0_5_47" style={{ maskType: "alpha" }} maskUnits="userSpaceOnUse" x="27" y="4" width="356" height="402">
@@ -43,7 +38,7 @@ export namespace PieceViews {
           </g>
         </svg>
       )
-    } else if (rOri == 1) {
+    } else if (orientation % 3 == 1) {
       return (
         <svg width="410" height="410" viewBox="0 0 410 410" fill="none" xmlns="http://www.w3.org/2000/svg">
           <mask id="mask0_5_129" style={{ maskType: "alpha" }} maskUnits="userSpaceOnUse" x="27" y="4" width="356" height="402">
@@ -90,8 +85,5 @@ export namespace PieceViews {
         </svg>
       );
     }
-
-
   }
-
 }

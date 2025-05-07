@@ -52,6 +52,7 @@ const MemoSetupScreen: React.FC<MemoSetupScreenProps> = ({ memoScheme, setMemoSc
   }, [handleKeyDown]);
 
   const toggleMemoMode = () => {
+    setEditingSticker(null)
     setMemoMode(prev => prev == PieceType.CORNER ? PieceType.EDGE : PieceType.CORNER)
   }
 
