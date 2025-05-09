@@ -25,7 +25,7 @@ export class Cube {
       throw Error("Cube.ts - constructor() - Attempting to construct a cube from invalid memo scheme.");
     }
 
-    console.log("Cube created with memoscheme:", memoScheme);
+    // console.log("Cube created with memoscheme:", memoScheme);
 
     // break up the memoScheme into pieces
     /**

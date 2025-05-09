@@ -81,10 +81,18 @@
   flex-direction: row;
 }
 
+.dynamic-horizontal-layout {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Switch to column layout when aspect ratio is narrow */
 @media (max-aspect-ratio: 1 / 1) {
   .dynamic-vertical-layout {
     flex-direction: column;
+  }
+  .dynamic-horizontal-layout {
+    flex-direction: row;
   }
 }
 

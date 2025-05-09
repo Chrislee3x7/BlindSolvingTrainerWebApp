@@ -15,21 +15,25 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
 
   const [sessionStarted, setSessionStarted] = useState<boolean>(false);
   const [sessionOver, setSessionOver] = useState<boolean>(false);
-  const [timer, setTimer] = useState<number>(timeTrialDuration);
-  const [questionIndex, setQuestionIndex] = useState(0);
+
+  const [clock, setClock] = useState<number>(-1);
 
   const [currPiece, setCurrPiece] = useState<CornerPiece | EdgePiece | null>(null);
   const [currAnswer, setCurrAnswer] = useState<Sticker | null>(null);
+  const [answerList, setAnswerList] = useState<string[]>([]);
   const [orientation, setOrientation] = useState<number>(0); // 0-6 based even odd for edge flip, % 3 for corner and edge orientation
 
+  const [questionsAnswered, setQuestionsAnswered] = useState<number>(0);
+  const [correctAnswers, setCorrectAnswers] = useState<number>(0);
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const hasTimerStartedRef = useRef<boolean>(false);
+  const hasTimeStartedRef = useRef<boolean>(false);
 
   useEffect(() => {
-    if (hasTimerStartedRef.current) {
+    if (hasTimeStartedRef.current) {
       return;
     }
-    hasTimerStartedRef.current = true
+    hasTimeStartedRef.current = true
 
     console.log("calling nextPiece")
     nextPiece();
@@ -41,13 +45,22 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
     } else if (mode == "piece-count") {
       // so something else
       console.log("starting piece count mode");
+      startStopwatch();
     }
-  }, [])
+    setSessionStarted(true);
+  }, []);
 
-  function startTimer() {
-    console.log("starting timer")
+  useEffect(() => {
+    console.log(mode, questionsAnswered, pieceCount)
+    if (mode == "piece-count" && questionsAnswered == pieceCount) {
+      setSessionOver(true);
+    }
+  }, [questionsAnswered, mode])
+
+  const startTimer = () => {
+    setClock(timeTrialDuration);
     intervalRef.current = setInterval(() => {
-      setTimer(t => {
+      setClock(t => {
         if (t <= 1) {
           clearInterval(intervalRef.current!);
           setSessionOver(true);
@@ -58,23 +71,18 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
     }, 1000);
   }
 
-  // function answerQuestion() {
-  //   if (mode === "questions") {
-  //     const next = questionIndex + 1;
-  //     if (next >= totalQuestions) {
-  //       setGameOver(true);
-  //     } else {
-  //       setQuestionIndex(next);
-  //     }
-  //   }
-  // }
+  const startStopwatch = () => {
+    setClock(0);
+    intervalRef.current = setInterval(() => {
+      setClock(t => t + 1);
+    }, 1000);
+  }
 
   function resetGame() {
     // setCountdown(3);
     setSessionStarted(false);
     setSessionOver(false);
-    setTimer(timeTrialDuration);
-    setQuestionIndex(0);
+    setClock(-1);
   }
 
   const getCurrPieceView = () => {
@@ -88,14 +96,35 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
     }
   }
 
+  const randomizeAnswerOrder = (answers: string[]): string[] => {
+    let randAns = answers;
+    for (let i = randAns.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [randAns[i], randAns[j]] = [randAns[j], randAns[i]];
+    }
+    return randAns;
+  }
+
+  const generateAnswerList = (piece: CornerPiece | EdgePiece, answer: Sticker): string[] => {
+    // for now just use randomized list of memos of the same face
+    if (!answer || !piece) {
+      throw Error("useTrainer.tsx - generateAnswerList() - curr answer or currPiece is null");
+    }
+    if (piece.length == 3) {
+      return randomizeAnswerOrder(memoScheme[answer.face].corners);
+    } else {
+      return randomizeAnswerOrder(memoScheme[answer.face].edges);
+    }
+  }
+
   /**
    * Sets currPiece to a newly generated piece (not the view)
    * Also sets the orientation
    * Also sets the answer sticker (color and memo)
+   * Also generates answer list (includes correct answer)
    */
   const nextPiece = () => {
     setOrientation(Math.floor(Math.random() * 6)); // randomize orientation
-
     let p = -1
     if (pieceTypes == "corners+edges") {
       p = Math.floor(Math.random() * 2);
@@ -104,22 +133,43 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
     if (pieceTypes == "corners" || p == 0) {
       let c = cube.sampleCornerPiece();
       setCurrPiece(c);
-      setCurrAnswer(c[Math.floor(Math.random() * 3)]);
+      let ans = c[Math.floor(Math.random() * 3)]
+      setCurrAnswer(ans);
+      setAnswerList(generateAnswerList(c, ans));
     } else if (pieceTypes == "edges" || p == 1) {
       let e = cube.sampleEdgePiece();
       setCurrPiece(e);
-      setCurrAnswer(e[Math.floor(Math.random() * 2)]);
+      let ans = e[Math.floor(Math.random() * 2)]
+      setCurrAnswer(ans);
+      setAnswerList(generateAnswerList(e, ans));
     } else {
       throw Error("useTrainer.tsx - nextPiece() - No such next piece")
     }
   }
 
+  const answerQuestion = (answer: string): boolean => {
+    if (!currAnswer) {
+      throw Error("useTrainer.tsx - answerQuestion() - currAnswer is undefined")
+    }
+    setQuestionsAnswered(n => n + 1);
+    if (answer == currAnswer.memo) {
+      setCorrectAnswers(n => n + 1);
+    }
+
+    return answer == currAnswer.memo;
+  }
+
   return {
     sessionStarted,
     sessionOver,
-    timer,
-    questionIndex,
+    clock,
+    currPiece,
+    currAnswer,
     getCurrPieceView,
+    answerList,
     nextPiece,
+    answerQuestion,
+    questionsAnswered,
+    correctAnswers,
   };
 }
