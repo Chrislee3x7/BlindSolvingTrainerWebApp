@@ -7,15 +7,18 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
-import { createContext, useState, useContext, ReactNode, useCallback } from "react";
+import { DialogOverlay } from "@radix-ui/react-dialog";
+import { createContext, useState, useContext, ReactNode, useCallback, useEffect } from "react";
 
 export type DialogOptions = {
   title: string;
   description?: string;
+  blurBackground?: boolean;
   actionLabel?: string;
   actionVariant?: "default" | "destructive" | "outline" | null | undefined;
   cancelLabel?: string;
   onConfirm?: () => void;
+  onCancel?: () => void;
   children?: ReactNode;
 };
 
@@ -30,7 +33,13 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
   const [dialog, setDialog] = useState<DialogOptions | null>(null);
 
   const showDialog = useCallback((options: DialogOptions) => {
-    setDialog(options);
+    const defaultOptions: Partial<DialogOptions> = {
+      blurBackground: false,
+      actionVariant: "default",
+      cancelLabel: "Cancel",
+      actionLabel: "Confirm",
+    };
+    setDialog({ ...defaultOptions, ...options });
     setIsOpen(true);
   }, []);
 
@@ -40,6 +49,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleCancel = () => {
+    dialog?.onCancel?.();
     setIsOpen(false);
   };
 
@@ -47,7 +57,11 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     <DialogContext.Provider value={{ showDialog }}>
       {children}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
+        {dialog?.blurBackground && <DialogOverlay className="fixed inset-0 bg-gray-700/80 backdrop-blur-3xl" />}
+        <DialogContent onEscapeKeyDown={(e) => {
+          e.stopPropagation();
+          handleCancel();
+        }} onPointerDownOutside={handleCancel}>
           <DialogHeader>
             <DialogTitle>{dialog?.title}</DialogTitle>
             {dialog?.description && (

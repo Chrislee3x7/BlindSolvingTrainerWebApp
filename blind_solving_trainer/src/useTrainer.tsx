@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, JSX } from "react";
+import { useState, useEffect, useRef, useMemo, JSX, useCallback } from "react";
 import { TrainingSettings } from "./TrainingScreen";
 import { PieceViews } from "./PieceViews";
 import { MemoSchemeType } from "./MemoScheme";
@@ -15,6 +15,8 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
 
   const [sessionStarted, setSessionStarted] = useState<boolean>(false);
   const [sessionOver, setSessionOver] = useState<boolean>(false);
+  const [sessionPaused, setSessionPaused] = useState<boolean>(false)
+
 
   const [clock, setClock] = useState<number>(-1);
 
@@ -35,16 +37,17 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
     }
     hasTimeStartedRef.current = true
 
-    console.log("calling nextPiece")
-    nextPiece();
+    nextPiece(); // get initial piece
 
     if (mode == "time-trial") {
       console.log("starting timer from use effect")
       console.log(mode, timeTrialDuration, pieceCount, pieceTypes)
+      setClock(timeTrialDuration);
       startTimer();
     } else if (mode == "piece-count") {
       // so something else
       console.log("starting piece count mode");
+      setClock(0);
       startStopwatch();
     }
     setSessionStarted(true);
@@ -58,7 +61,6 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
   }, [questionsAnswered, mode])
 
   const startTimer = () => {
-    setClock(timeTrialDuration);
     intervalRef.current = setInterval(() => {
       setClock(t => {
         if (t <= 1) {
@@ -72,7 +74,6 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
   }
 
   const startStopwatch = () => {
-    setClock(0);
     intervalRef.current = setInterval(() => {
       setClock(t => t + 1);
     }, 1000);
@@ -84,6 +85,22 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
     setSessionOver(false);
     setClock(-1);
   }
+
+  const pauseSession = useCallback(() => {
+    clearInterval(intervalRef.current!);
+    setSessionPaused(true);
+  }, [intervalRef, setSessionPaused]);
+
+  const resumeSession = useCallback(() => {
+    if (mode == "time-trial") {
+      startTimer();
+    } else if (mode == "piece-count") {
+      startStopwatch();
+    } else {
+      throw Error("useTrainer.tsx - resumeSession() - Invalid mode");
+    }
+    setSessionPaused(false);
+  }, [setSessionPaused]);
 
   const getCurrPieceView = () => {
     if (!currPiece) {
@@ -97,7 +114,7 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
   }
 
   const randomizeAnswerOrder = (answers: string[]): string[] => {
-    let randAns = answers;
+    let randAns = [...answers];
     for (let i = randAns.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [randAns[i], randAns[j]] = [randAns[j], randAns[i]];
@@ -162,6 +179,9 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
   return {
     sessionStarted,
     sessionOver,
+    pauseSession,
+    resumeSession,
+    sessionPaused,
     clock,
     currPiece,
     currAnswer,

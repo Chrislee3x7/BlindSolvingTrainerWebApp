@@ -16,7 +16,7 @@ function BlindSolvingTrainer() {
   const [alertMessage, setAlertMessage] = useState<string>("");
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
 
-  const { confirm: trainingSetupDialog } = useDialog();
+  const { dialog: trainingSetupDialog } = useDialog();
 
   const [trainingSettings, setTrainingSettings] = useState<TrainingSettings>(createDefaultTrainingSettings());
 

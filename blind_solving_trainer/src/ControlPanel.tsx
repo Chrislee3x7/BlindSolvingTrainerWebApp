@@ -13,7 +13,7 @@ type ControlPanelProps = {
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, resetToDefaultMemoScheme, startTraining }) => {
 
-  const { confirm: confirmResetMemoSchemeDialog } = useDialog();
+  const { dialog: confirmResetMemoSchemeDialog } = useDialog();
 
   const handleDefaultMemosClick = () => {
     // show dialog to create game

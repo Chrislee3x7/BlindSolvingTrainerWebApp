@@ -47,6 +47,8 @@ export class Cube {
     this.cornerPieces.push(this.constructCorner(memoScheme, Face.D, 2, Face.R, 2, Face.B, 3))
     this.cornerPieces.push(this.constructCorner(memoScheme, Face.D, 3, Face.B, 2, Face.L, 3))
 
+    console.log(this.cornerPieces)
+
     this.edgePieces = [];
 
     this.edgePieces.push(this.constructEdge(memoScheme, Face.U, 0, Face.B, 0))

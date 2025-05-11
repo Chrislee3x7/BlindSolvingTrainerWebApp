@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { MemoSchemeType, PieceType } from "./MemoScheme";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MemoSchemeType, MemoSchemeUtils, PieceType } from "./MemoScheme";
 import { Button } from "./components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { Label } from "./components/ui/label";
 import { useTrainer } from "./useTrainer";
+import { useDialog } from "./dialog/useDialog";
 
 export type TrainingSettings = {
   mode: "time-trial" | "piece-count";
@@ -30,23 +31,71 @@ type TrainingScreenProps = {
 const TrainingScreen = ({ memoScheme, backToMemoSetup, settings }: TrainingScreenProps) => {
 
   const trainer = useTrainer({ settings, memoScheme });
+  const { dialog: pauseDialog } = useDialog();
+
+  const onAnswerInputted = useCallback((answer: string) => {
+    let a: string = answer.toUpperCase();
+    if (!trainer.currAnswer || !trainer.currPiece) {
+      throw Error("TrainingScreen.tsx - onAnswerInputted() - trainer.currAnswer or trainer.currPiece is undefined")
+    }
+    let isCorrect = trainer.answerQuestion(a);
+    console.log(a + " = " + trainer.currAnswer.memo + " from piece: " + JSON.stringify(trainer.currPiece[0]) + JSON.stringify(trainer.currPiece[1]) + (trainer.currPiece.length > 2 ? JSON.stringify(trainer.currPiece[2]) : ""));
+    trainer.nextPiece();
+  }, [trainer]);
+
+  const onAnswerInputtedRef = useRef(onAnswerInputted);
+
+  // Always keep the ref updated with the latest function
+  useEffect(() => {
+    onAnswerInputtedRef.current = onAnswerInputted;
+  }, [onAnswerInputted]);
+
+  const onPause = useCallback(() => {
+    trainer.pauseSession();
+    pauseDialog({
+      title: "Start Training",
+      description: "",
+      actionLabel: "Exit",
+      blurBackground: true,
+      actionVariant: "destructive",
+      cancelLabel: "Cancel",
+      onConfirm: () => {
+        backToMemoSetup();
+      },
+      onCancel: () => {
+        trainer.resumeSession();
+        console.log("resume session called from dialog");
+      },
+      children: (
+        <div>
+          <Label>{JSON.stringify(settings)}</Label>
+          <Label>{trainer.clock}</Label>
+        </div>
+      )
+    });
+  }, [trainer]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    let key = e.key;
+    if (key === 'Escape' && !trainer.sessionPaused) {
+      // show dialog with "paused", current mode, time, resume / restart / go to memo scheme setup
+      onPause();
+    } else if (MemoSchemeUtils.isValidMemo(key)) {
+      onAnswerInputtedRef.current(key)
+    }
+  }, [trainer.sessionPaused])
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (trainer.sessionOver) {
       backToMemoSetup();
     }
   }, [trainer.sessionOver]);
-
-  const onAnswerInputted = (answer: string) => {
-    let a: string = answer.toUpperCase();
-    if (!trainer.currAnswer || !trainer.currPiece) {
-      throw Error("TrainingScreen.tsx - onAnswerInputted() - trainer.currAnswer or trainer.currPiece is undefined")
-    }
-    trainer.answerQuestion(a);
-    let isCorrect: boolean = a == trainer.currAnswer.memo;
-    console.log(a + " = " + trainer.currAnswer.memo + " from piece: " + JSON.stringify(trainer.currPiece[0]) + JSON.stringify(trainer.currPiece[1]) + (trainer.currPiece.length > 2 ? JSON.stringify(trainer.currPiece[2]) : ""));
-    trainer.nextPiece();
-  }
 
   return (
     <div className="flex flex-col h-full w-full gap-2">
