@@ -32,10 +32,6 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
   const hasTimeStartedRef = useRef<boolean>(false);
 
   useEffect(() => {
-    if (hasTimeStartedRef.current) {
-      return;
-    }
-    hasTimeStartedRef.current = true
 
     nextPiece(); // get initial piece
 
@@ -61,6 +57,10 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
   }, [questionsAnswered, mode])
 
   const startTimer = () => {
+    if (hasTimeStartedRef.current) {
+      return;
+    }
+    hasTimeStartedRef.current = true
     intervalRef.current = setInterval(() => {
       setClock(t => {
         if (t <= 1) {
@@ -74,6 +74,10 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
   }
 
   const startStopwatch = () => {
+    if (hasTimeStartedRef.current) {
+      return;
+    }
+    hasTimeStartedRef.current = true
     intervalRef.current = setInterval(() => {
       setClock(t => t + 1);
     }, 1000);
@@ -88,6 +92,7 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
 
   const pauseSession = useCallback(() => {
     clearInterval(intervalRef.current!);
+    hasTimeStartedRef.current = false;
     setSessionPaused(true);
   }, [intervalRef, setSessionPaused]);
 
@@ -164,7 +169,7 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
     }
   }
 
-  const answerQuestion = (answer: string): boolean => {
+  const answerQuestion = (answer: string): string => {
     if (!currAnswer) {
       throw Error("useTrainer.tsx - answerQuestion() - currAnswer is undefined")
     }
@@ -173,8 +178,9 @@ export const useTrainer = ({ settings, memoScheme }: useTrainerProps) => {
       setCorrectAnswers(n => n + 1);
     }
 
-    return answer == currAnswer.memo;
+    return currAnswer.memo;
   }
+
 
   return {
     sessionStarted,

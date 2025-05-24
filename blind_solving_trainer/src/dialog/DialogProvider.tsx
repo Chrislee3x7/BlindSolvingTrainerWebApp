@@ -57,7 +57,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     <DialogContext.Provider value={{ showDialog }}>
       {children}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        {dialog?.blurBackground && <DialogOverlay className="fixed inset-0 bg-gray-700/80 backdrop-blur-3xl" />}
+        {dialog?.blurBackground && <DialogOverlay className="fixed inset-0 bg-white/60 backdrop-blur-xl" />}
         <DialogContent onEscapeKeyDown={(e) => {
           e.stopPropagation();
           handleCancel();

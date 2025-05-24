@@ -1,12 +1,12 @@
 class Cube {
 
     static defaultColorScheme =
-            ["#FFFFFF", // white
-            "#FF8708", // orange
-            "#09CF02", // green
-            "#EB2902", // red
-            "#0877FF", // blue
-            "#FFFF00"]; // yellow
+        ["#FFFFFF", // white
+        "#FF8708", // orange
+        "#09CF02", // green
+        "#EB2902", // red
+        "#0877FF", // blue
+        "#FFFF00"]; // yellow
 
     static defaultMemoScheme = 
         "A0A0B0B0C0C0D0D0" +
