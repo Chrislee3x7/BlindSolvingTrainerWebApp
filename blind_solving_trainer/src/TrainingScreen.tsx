@@ -32,6 +32,7 @@ const TrainingScreen = ({ memoScheme, backToMemoSetup, settings }: TrainingScree
 
   const trainer = useTrainer({ settings, memoScheme });
   const { dialog: pauseDialog } = useDialog();
+  const { dialog: endDialog } = useDialog();
 
   const [correctAnswerLabel, setCorrectAnswerLabel] = useState<string>("?");
   const [showAnswerCorrect, setShowAnswerCorrect] = useState<boolean>(false);
@@ -46,7 +47,7 @@ const TrainingScreen = ({ memoScheme, backToMemoSetup, settings }: TrainingScree
 
     // set the question mark to the right letter
     setCorrectAnswerLabel(correctAnswer);
-    if (correctAnswer == answer) {
+    if (correctAnswer == a) {
       setShowAnswerCorrect(true)
     } else {
       setShowAnswerWrong(true)
@@ -117,16 +118,40 @@ const TrainingScreen = ({ memoScheme, backToMemoSetup, settings }: TrainingScree
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const onEnd = useCallback(() => {
+    trainer.pauseSession(); // simply stops stopwatch/timer
+    endDialog({
+      title: "Training Finished",
+      description: "",
+      actionLabel: "Restart",
+      blurBackground: true,
+      actionVariant: "default",
+      cancelLabel: "Back to Memo Setup",
+      onConfirm: () => {
+        backToMemoSetup();
+      },
+      onCancel: () => {
+        backToMemoSetup();
+      },
+      children: (
+        <div>
+          <Label>{JSON.stringify(settings)}</Label>
+        </div>
+      )
+    });
+  }, [trainer]);
+
   useEffect(() => {
     if (trainer.sessionOver) {
-      backToMemoSetup();
+      // backToMemoSetup();
+      // show summary screen
     }
   }, [trainer.sessionOver]);
 
   return (
     <div className="flex flex-col h-full w-full gap-2">
-      {showAnswerCorrect && <div className="absolute h-full w-full bg-lime-300 opacity-50"></div>}
-      {showAnswerWrong && <div className="absolute h-full w-full bg-red-500 bg opacity-50"></div>}
+      {showAnswerCorrect && <div className="absolute h-full w-full bg-lime-300 opacity-50" />}
+      {showAnswerWrong && <div className="absolute h-full w-full bg-red-500 bg opacity-50" />}
       <div className="dynamic-vertical-layout grow items-center">
         <div className="flex grow content-center justify-center items-center" style={{ height: "66%" }}>
           {trainer.getCurrPieceView()}
