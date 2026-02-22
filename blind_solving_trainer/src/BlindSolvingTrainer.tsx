@@ -6,6 +6,8 @@ import MemoSetupScreen from './MemoSetupScreen'
 import TrainingScreen, { createDefaultTrainingSettings, TrainingSettings } from './TrainingScreen'
 import { useDialog } from "./dialog/useDialog";
 import { TrainingSetupForm } from './TrainingSetupForm'
+import CubeVizScreen from './CubeVizScreen';
+import BluetoothScreen from './BluetoothScreen';
 
 function BlindSolvingTrainer() {
 
@@ -69,6 +71,14 @@ function BlindSolvingTrainer() {
     setScreen("training");
   }, [])
 
+  const showCubeViz = useCallback(() => {
+    setScreen("cube-viz");
+  }, [])
+
+  const showBluetoothScreen = useCallback(() => {
+    setScreen("bluetooth-screen");
+  }, [])
+
 
 
   return (
@@ -86,10 +96,18 @@ function BlindSolvingTrainer() {
         <MemoSetupScreen
           memoScheme={memoScheme}
           setMemoScheme={setMemoScheme}
-          startTraining={handleStartTrainingClick} />
+          startTraining={handleStartTrainingClick}
+          showCubeViz={showCubeViz}
+          showBluetoothScreen={showBluetoothScreen} />
       }
       {screen == "training" &&
         <TrainingScreen memoScheme={memoScheme} settings={trainingSettings} backToMemoSetup={() => { setScreen("memo-setup") }} />
+      }
+      {screen == "cube-viz" &&
+        <CubeVizScreen backToMemoSetup={() => { setScreen("memo-setup") }} />
+      }
+      {screen == "bluetooth-screen" &&
+        <BluetoothScreen backToMemoSetup={() => { setScreen("memo-setup") }} />
       }
     </div>
   )

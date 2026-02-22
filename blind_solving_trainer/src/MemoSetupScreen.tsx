@@ -7,9 +7,11 @@ interface MemoSetupScreenProps {
   memoScheme: MemoSchemeType;
   setMemoScheme: React.Dispatch<React.SetStateAction<MemoSchemeType>>
   startTraining: () => void;
+  showCubeViz: () => void;
+  showBluetoothScreen: () => void;
 };
 
-const MemoSetupScreen: React.FC<MemoSetupScreenProps> = ({ memoScheme, setMemoScheme, startTraining }) => {
+const MemoSetupScreen: React.FC<MemoSetupScreenProps> = ({ memoScheme, setMemoScheme, startTraining, showCubeViz, showBluetoothScreen }) => {
   const [memoMode, setMemoMode] = useState<PieceType>(PieceType.CORNER);
 
   const [editingSticker, setEditingSticker] = useState<StickerId | null>(null);
@@ -64,7 +66,9 @@ const MemoSetupScreen: React.FC<MemoSetupScreenProps> = ({ memoScheme, setMemoSc
         handleStickerClick={handleStickerClick} />
       <ControlPanel toggleMemoMode={toggleMemoMode} memoMode={memoMode}
         resetToDefaultMemoScheme={() => { setMemoScheme(MemoSchemeUtils.createDefault()); setEditingSticker(null) }}
-        startTraining={startTraining} />
+        startTraining={startTraining}
+        showCubeViz={showCubeViz}
+        showBluetoothScreen={showBluetoothScreen} />
     </>
   );
 }

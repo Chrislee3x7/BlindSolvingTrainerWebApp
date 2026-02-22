@@ -9,9 +9,11 @@ type ControlPanelProps = {
   toggleMemoMode: () => void
   resetToDefaultMemoScheme: () => void
   startTraining: () => void
+  showCubeViz: () => void
+  showBluetoothScreen: () => void
 }
 
-const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, resetToDefaultMemoScheme, startTraining }) => {
+const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, resetToDefaultMemoScheme, startTraining, showCubeViz, showBluetoothScreen }) => {
 
   const { dialog: confirmResetMemoSchemeDialog } = useDialog();
 
@@ -43,6 +45,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, r
         </Button>
         <Button onClick={startTraining}>
           <Label>Start Training</Label>
+        </Button>
+        <Button onClick={showCubeViz}>
+          <Label>Cube Viz</Label>
+        </Button>
+        <Button onClick={showBluetoothScreen}>
+          <Label>Bluetooth</Label>
         </Button>
       </div>
     </div>
