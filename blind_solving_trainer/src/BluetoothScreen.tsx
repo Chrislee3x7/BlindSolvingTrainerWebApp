@@ -1,7 +1,12 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  GAN_ENCRYPTION_KEYS,
+  GanGen4CubeEncrypter,
+  GanGen4ProtocolDriver,
+} from '@/lib/gan-bluetooth';
+import { Subscription } from 'rxjs';
 
 interface BluetoothScreenProps {
   backToMemoSetup: () => void;
@@ -10,42 +15,52 @@ interface BluetoothScreenProps {
 const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) => {
   const [status, setStatus] = useState("Disconnected");
   const [lastMove, setLastMove] = useState("");
-  const [connectedDevice, setConnectedDevice] = useState<BluetoothDevice | null>(null);
-  const [macAddress, setMacAddress] = useState("");
+  const [salt, setSalt] = useState("");
+  const [gattServer, setGattServer] = useState<BluetoothRemoteGATTServer | null>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [rawData, setRawData] = useState("");
+  const [decryptedData, setDecryptedData] = useState("");
 
   const handleDisconnect = useCallback(async () => {
-    if (connectedDevice && connectedDevice.gatt?.connected) {
+    if (gattServer && gattServer.connected) {
       setStatus("Disconnecting...");
-      connectedDevice.gatt.disconnect();
-      setConnectedDevice(null);
+      gattServer.disconnect();
+      setGattServer(null);
+      if (subscription) {
+        subscription.unsubscribe();
+        setSubscription(null);
+      }
       setLastMove("");
+      setRawData("");
       setStatus("Disconnected");
     }
-  }, [connectedDevice]);
+  }, [gattServer, subscription]);
 
   const handleConnect = useCallback(async () => {
-    try {
-      setStatus("Requesting Bluetooth device...");
-      const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: ['00000010-0000-fff7-fff6-fff5fff4fff0']
-      });
+    if (!salt) {
+      setStatus("Please enter the encryption salt.");
+      return;
+    }
 
-      if (!device.gatt) {
-        setStatus("Error: No GATT server found on device.");
+    let server: BluetoothRemoteGATTServer | null = null;
+    let newSubscription: Subscription | null = null;
+
+    try {
+      // Parse the hex string salt into a Uint8Array
+      const saltBytes = new Uint8Array(salt.replace(/[^0-9a-fA-F]/g, '').match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+      if (saltBytes.length !== 6) {
+        setStatus("Error: Salt must be 6 bytes (12 hex characters).");
         return;
       }
 
-      setConnectedDevice(device);
-
-      device.addEventListener('gattserverdisconnected', () => {
-        setStatus("Disconnected");
-        setConnectedDevice(null);
-        setLastMove("");
+      setStatus("Requesting Bluetooth device...");
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['00000010-0000-fff7-fff6-fff5fff4fff0'],
       });
 
       setStatus("Connecting to GATT Server...");
-      const server = await device.gatt.connect();
+      server = await device.gatt!.connect();
 
       setStatus("Getting Service...");
       const service = await server.getPrimaryService('00000010-0000-fff7-fff6-fff5fff4fff0');
@@ -54,20 +69,42 @@ const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) =>
       const notifyChar = await service.getCharacteristic('0000fff6-0000-1000-8000-00805f9b34fb');
       const writeChar = await service.getCharacteristic('0000fff5-0000-1000-8000-00805f9b34fb');
 
-      setStatus("Starting notifications...");
-      await notifyChar.startNotifications();
+      // --- Decoding Logic Setup ---
+      const keyToUse = GAN_ENCRYPTION_KEYS[0].key;
+      const ivToUse = GAN_ENCRYPTION_KEYS[0].iv;
+      const encrypter = new GanGen4CubeEncrypter(new Uint8Array(keyToUse), new Uint8Array(ivToUse), saltBytes);
+      const driver = new GanGen4ProtocolDriver();
+      // --- End Decoding Logic Setup ---
 
-      notifyChar.addEventListener('characteristicvaluechanged', (event) => {
-        const value = (event.target as BluetoothRemoteGATTCharacteristic).value;
-        if (value) {
-          const hexString = Array.from(new Uint8Array(value.buffer)).map(b => b.toString(16).padStart(2, '0')).join(' ');
-          setLastMove(`Raw Data: ${hexString}`);
+      newSubscription = driver.events$.subscribe((event) => {
+        if (event.type === "MOVE") {
+          setLastMove(`Move: ${event.move}`);
         }
       });
 
-      setStatus("Sending wakeup command...");
+      await notifyChar.startNotifications();
+      notifyChar.addEventListener('characteristicvaluechanged', (event: Event) => {
+        const target = event.target as BluetoothRemoteGATTCharacteristic;
+        const value = target.value;
+        if (value) {
+          const rawValue = new Uint8Array(value.buffer);
+          const rawHexString = Array.from(rawValue).map(b => b.toString(16).padStart(2, '0')).join(' ');
+          setRawData(`Raw: ${rawHexString}`);
+
+          const decrypted = encrypter.decrypt(rawValue);
+          const decryptedHexString = Array.from(decrypted).map(b => b.toString(16).padStart(2, '0')).join(' ');
+          console.log('Encrypted (Raw):', rawHexString);
+          console.log('Decrypted:', decryptedHexString);
+          setDecryptedData(`Decrypted: ${decryptedHexString}`)
+
+          driver.handleData(decrypted);
+        }
+      });
+
       await writeChar.writeValue(new Uint8Array([0xb0]));
 
+      setGattServer(server);
+      setSubscription(newSubscription);
       setStatus("Connected and listening. Try turning the cube!");
 
     } catch (e: unknown) {
@@ -76,38 +113,53 @@ const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) =>
       } else {
         setStatus("An unknown error occurred");
       }
-      setConnectedDevice(null);
+      if (server && server.connected) {
+        server.disconnect();
+      }
+      if (newSubscription) {
+        newSubscription.unsubscribe();
+      }
+      setGattServer(null);
+      setSubscription(null);
     }
-  }, []);
+  }, [salt]);
 
   useEffect(() => {
-    // Clean up connection on component unmount
     return () => {
-      if (connectedDevice && connectedDevice.gatt?.connected) {
-        connectedDevice.gatt.disconnect();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+      if (gattServer && gattServer.connected) {
+        gattServer.disconnect();
       }
     };
-  }, [connectedDevice]);
+  }, [subscription, gattServer]);
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full">
       <h1 className="text-2xl mb-4">Bluetooth Connection</h1>
       <p className="mb-4">Status: {status}</p>
-      {lastMove && <pre className="mb-4 p-2 bg-gray-100 rounded-md text-xs whitespace-pre-wrap">{lastMove}</pre>}
+      {rawData && <p className="mb-4 font-mono text-sm text-gray-500">{rawData}</p>}
+      {decryptedData && <p className="mb-4 font-mono text-sm text-gray-500">{decryptedData}</p>}
+      <p className="mb-4 font-mono text-lg">{"Last Move:" + lastMove}</p>
       <div className="mb-4 w-64">
-        <label htmlFor="mac-address" className="block text-sm font-medium mb-1">Cube MAC Address (for reference)</label>
+        <label htmlFor="salt" className="block text-sm font-medium mb-1">Encryption Salt</label>
         <Input
           type="text"
-          id="mac-address"
-          value={macAddress}
-          onChange={(e) => setMacAddress(e.target.value)}
-          placeholder="e.g., XX:XX:XX:XX:XX:XX"
-          disabled={connectedDevice !== null}
+          id="salt"
+          value={salt}
+          onChange={(e) => setSalt(e.target.value)}
+          placeholder="e.g., B589BE5E3D0C"
+          disabled={gattServer?.connected || false}
         />
       </div>
       <div className="flex space-x-4">
-        <Button onClick={handleConnect} disabled={connectedDevice !== null}>Connect</Button>
-        <Button onClick={handleDisconnect} disabled={connectedDevice === null}>Disconnect</Button>
+        <Button onClick={handleConnect} disabled={gattServer?.connected || !salt}>
+          Connect
+        </Button>
+        <Button onClick={handleDisconnect} disabled={!gattServer?.connected}>
+          Disconnect
+        </Button>
         <Button onClick={backToMemoSetup}>Back to Memo Setup</Button>
       </div>
     </div>
