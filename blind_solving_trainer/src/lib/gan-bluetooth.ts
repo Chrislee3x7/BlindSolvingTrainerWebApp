@@ -102,30 +102,43 @@ export class GanGen4ProtocolDriver {
 
     public handleData(data: Uint8Array): void {
         const timestamp = Date.now();
-        if (data.length < 2) return;
-
-        const eventType = data[1]; // Check the second byte for the event type
-
-        if (eventType === 0x07) { // Move event for iCarry 4
-            // For debugging, convert the relevant part of the packet to a binary string.
-            // We focus on bytes 2 and 3, which likely contain the move data.
-            const byte2 = data[2]?.toString(2).padStart(8, '0') || "........";
-            const byte3 = data[3]?.toString(2).padStart(8, '0') || "........";
-            const binaryString = `Byte 2: ${byte2} | Byte 3: ${byte3}`;
-
-            const moveEvent: GanCubeEvent = {
-                type: "MOVE",
-                move: binaryString, // Overload the move string for debugging
-                // Dummy data for other fields
-                serial: 0,
-                timestamp: timestamp,
-                localTimestamp: timestamp,
-                cubeTimestamp: 0,
-                face: 0,
-                direction: 0,
-            };
-            this.events$.next(moveEvent);
+        // A move event is at least 9 bytes long (0-8) and has 0x07 at byte 1.
+        if (data.length < 9 || data[1] !== 0x07) {
+            return;
         }
+
+        const moveByte = data[8];
+        let move = "";
+
+        switch (moveByte) {
+            case 0x02: move = "U"; break;
+            case 0x42: move = "U'"; break;
+            case 0x20: move = "R"; break;
+            case 0x60: move = "R'"; break;
+            case 0x08: move = "F"; break;
+            case 0x48: move = "F'"; break;
+            case 0x10: move = "L"; break;
+            case 0x50: move = "L'"; break;
+            case 0x04: move = "B"; break;
+            case 0x44: move = "B'"; break;
+            case 0x01: move = "D"; break;
+            case 0x41: move = "D'"; break;
+            default:
+                // Unknown move byte, do nothing.
+                return;
+        }
+
+        const moveEvent: GanCubeEvent = {
+            type: "MOVE",
+            move: move,
+            serial: data[6], // User identified byte 6 as move count
+            timestamp: timestamp,
+            localTimestamp: timestamp,
+            cubeTimestamp: 0, // We can ignore time for now
+            face: 0, // Not needed
+            direction: 0, // Not needed
+        };
+        this.events$.next(moveEvent);
     }
 }
 // --- End of gan-cube-protocol.ts content ---

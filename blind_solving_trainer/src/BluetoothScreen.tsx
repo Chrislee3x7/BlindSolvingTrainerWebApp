@@ -15,7 +15,7 @@ interface BluetoothScreenProps {
 const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) => {
   const [status, setStatus] = useState("Disconnected");
   const [lastMove, setLastMove] = useState("");
-  const [salt, setSalt] = useState("");
+  const [salt, setSalt] = useState("B589BE5E3D0C");
   const [gattServer, setGattServer] = useState<BluetoothRemoteGATTServer | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [rawData, setRawData] = useState("");
@@ -93,7 +93,7 @@ const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) =>
 
           const decrypted = encrypter.decrypt(rawValue);
           const decryptedHexString = Array.from(decrypted).map(b => b.toString(16).padStart(2, '0')).join(' ');
-          console.log('Encrypted (Raw):', rawHexString);
+          // console.log('Encrypted (Raw):', rawHexString);
           console.log('Decrypted:', decryptedHexString);
           setDecryptedData(`Decrypted: ${decryptedHexString}`)
 
@@ -142,19 +142,8 @@ const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) =>
       {rawData && <p className="mb-4 font-mono text-sm text-gray-500">{rawData}</p>}
       {decryptedData && <p className="mb-4 font-mono text-sm text-gray-500">{decryptedData}</p>}
       <p className="mb-4 font-mono text-lg">{"Last Move:" + lastMove}</p>
-      <div className="mb-4 w-64">
-        <label htmlFor="salt" className="block text-sm font-medium mb-1">Encryption Salt</label>
-        <Input
-          type="text"
-          id="salt"
-          value={salt}
-          onChange={(e) => setSalt(e.target.value)}
-          placeholder="e.g., B589BE5E3D0C"
-          disabled={gattServer?.connected || false}
-        />
-      </div>
       <div className="flex space-x-4">
-        <Button onClick={handleConnect} disabled={gattServer?.connected || !salt}>
+        <Button onClick={handleConnect} disabled={gattServer?.connected}>
           Connect
         </Button>
         <Button onClick={handleDisconnect} disabled={!gattServer?.connected}>
