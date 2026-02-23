@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { PieceType } from "./MemoScheme";
 import { useDialog } from "./dialog/useDialog";
 import { Label } from "./components/ui/label";
+import { useBluetooth } from "./bluetooth/BluetoothContext";
 
 type ControlPanelProps = {
   memoMode: PieceType
@@ -16,6 +17,7 @@ type ControlPanelProps = {
 const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, resetToDefaultMemoScheme, startTraining, showCubeViz, showBluetoothScreen }) => {
 
   const { dialog: confirmResetMemoSchemeDialog } = useDialog();
+  const { handleConnect, isConnected } = useBluetooth();
 
   const handleDefaultMemosClick = () => {
     // show dialog to create game
@@ -30,6 +32,14 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, r
       }
     });
 
+  }
+
+  const handleBluetoothClick = () => {
+    if (isConnected) {
+      showBluetoothScreen();
+    } else {
+      handleConnect();
+    }
   }
 
   return (
@@ -49,8 +59,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, r
         <Button onClick={showCubeViz}>
           <Label>Cube Viz</Label>
         </Button>
-        <Button onClick={showBluetoothScreen}>
-          <Label>Bluetooth</Label>
+        <Button onClick={handleBluetoothClick}>
+          <Label>{isConnected ? 'Bluetooth' : 'Connect Cube'}</Label>
         </Button>
       </div>
     </div>

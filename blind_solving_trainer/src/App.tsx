@@ -1,11 +1,14 @@
 import { DialogProvider } from './dialog/DialogProvider'
 import BlindSolvingTrainer from './BlindSolvingTrainer'
+import { BluetoothProvider } from './bluetooth/BluetoothContext'
 
 function App() {
 
   return (
     <DialogProvider>
-      <BlindSolvingTrainer />
+      <BluetoothProvider>
+        <BlindSolvingTrainer />
+      </BluetoothProvider>
     </DialogProvider>
   )
 }

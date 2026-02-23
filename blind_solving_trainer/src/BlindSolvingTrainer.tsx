@@ -8,6 +8,7 @@ import { useDialog } from "./dialog/useDialog";
 import { TrainingSetupForm } from './TrainingSetupForm'
 import CubeVizScreen from './CubeVizScreen';
 import BluetoothScreen from './BluetoothScreen';
+import StatusIndicator from './StatusIndicator';
 
 function BlindSolvingTrainer() {
 
@@ -93,12 +94,15 @@ function BlindSolvingTrainer() {
       </Alert>
 
       {screen == "memo-setup" &&
-        <MemoSetupScreen
-          memoScheme={memoScheme}
-          setMemoScheme={setMemoScheme}
-          startTraining={handleStartTrainingClick}
-          showCubeViz={showCubeViz}
-          showBluetoothScreen={showBluetoothScreen} />
+        <>
+          <StatusIndicator />
+          <MemoSetupScreen
+            memoScheme={memoScheme}
+            setMemoScheme={setMemoScheme}
+            startTraining={handleStartTrainingClick}
+            showCubeViz={showCubeViz}
+            showBluetoothScreen={showBluetoothScreen} />
+        </>
       }
       {screen == "training" &&
         <TrainingScreen memoScheme={memoScheme} settings={trainingSettings} backToMemoSetup={() => { setScreen("memo-setup") }} />
