@@ -74,12 +74,8 @@ export class GanGen4CubeEncrypter extends GanGen2CubeEncrypter { }
 
 export type GanCubeMoveEvent = {
     type: "MOVE";
-    serial: number;
-    face: number;
-    direction: number;
+    moveCount: number;
     move: string;
-    localTimestamp: number | null;
-    cubeTimestamp: number | null;
 };
 
 export type GanCubeEvent = { timestamp: number } & GanCubeMoveEvent; // Simplified for our use case
@@ -106,39 +102,57 @@ export class GanGen4ProtocolDriver {
         if (data.length < 9 || data[1] !== 0x07) {
             return;
         }
+        console.log("Data dycrypted:", data);
 
         const moveByte = data[8];
-        let move = "";
 
-        switch (moveByte) {
-            case 0x02: move = "U"; break;
-            case 0x42: move = "U'"; break;
-            case 0x20: move = "R"; break;
-            case 0x60: move = "R'"; break;
-            case 0x08: move = "F"; break;
-            case 0x48: move = "F'"; break;
-            case 0x10: move = "L"; break;
-            case 0x50: move = "L'"; break;
-            case 0x04: move = "B"; break;
-            case 0x44: move = "B'"; break;
-            case 0x01: move = "D"; break;
-            case 0x41: move = "D'"; break;
-            default:
-                // Unknown move byte, do nothing.
-                return;
+        const move = this.translateMoveByteToMove(moveByte);
+        if (!move) {
+            return;
         }
 
         const moveEvent: GanCubeEvent = {
             type: "MOVE",
             move: move,
-            serial: data[6], // User identified byte 6 as move count
+            moveCount: data[6], // User identified byte 6 as move count
             timestamp: timestamp,
-            localTimestamp: timestamp,
-            cubeTimestamp: 0, // We can ignore time for now
-            face: 0, // Not needed
-            direction: 0, // Not needed
         };
         this.events$.next(moveEvent);
+
+        // check if there is a second move by looking at byte 10
+        if (data.length < 20 || data[10] !== 0x07) {
+            return;
+        }
+        const secondMoveByte = data[17];
+        const secondMove = this.translateMoveByteToMove(secondMoveByte);
+        if (!secondMove) {
+            return;
+        }
+        const secondMoveEvent: GanCubeEvent = {
+            type: "MOVE",
+            move: secondMove,
+            moveCount: data[15], // User identified byte 6 as move count
+            timestamp: timestamp,
+        };
+        this.events$.next(secondMoveEvent);
+    }
+
+    private translateMoveByteToMove(moveByte: number): string | undefined {
+        switch (moveByte) {
+            case 0x02: return "U";
+            case 0x42: return "U'";
+            case 0x20: return "R";
+            case 0x60: return "R'";
+            case 0x08: return "F";
+            case 0x48: return "F'";
+            case 0x10: return "L";
+            case 0x50: return "L'";
+            case 0x04: return "B";
+            case 0x44: return "B'";
+            case 0x01: return "D";
+            case 0x41: return "D'";
+            default: return;
+        }
     }
 }
 // --- End of gan-cube-protocol.ts content ---
