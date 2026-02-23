@@ -142,3 +142,27 @@ export class GanGen4ProtocolDriver {
     }
 }
 // --- End of gan-cube-protocol.ts content ---
+
+/**
+Byte Mapping:
+    0  01 constant move event maybe
+    1  07 constant
+    2  xx time
+    3  xx time
+    4  xx time
+    5  00 maybe time
+    6  xx move count (resets at ff)
+    7  00 unsure
+    8  xx move (R, R', U' U, F, D, etc)
+    9  00 unsure
+    10 00 unsure
+    11 00 unsure
+    12 00 unsure
+    13 00 unsure
+    14 00 unsure
+    15 00 unsure
+    16 00 unsure
+    17 00 unsure
+    18 xx random unsure
+    19 xx random unsure
+ */

@@ -15,11 +15,16 @@ interface BluetoothScreenProps {
 const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) => {
   const [status, setStatus] = useState("Disconnected");
   const [lastMove, setLastMove] = useState("");
-  const [salt, setSalt] = useState("B589BE5E3D0C");
+  const [moves, setMoves] = useState<string[]>([]);
+  const [salt, setSalt] = useState("B589BE5E3D0C"); // Pre-filled salt
   const [gattServer, setGattServer] = useState<BluetoothRemoteGATTServer | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [rawData, setRawData] = useState("");
   const [decryptedData, setDecryptedData] = useState("");
+
+  const handleClearMoves = () => {
+    setMoves([]);
+  };
 
   const handleDisconnect = useCallback(async () => {
     if (gattServer && gattServer.connected) {
@@ -32,15 +37,13 @@ const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) =>
       }
       setLastMove("");
       setRawData("");
+      setMoves([]); // Clear moves on disconnect
       setStatus("Disconnected");
     }
   }, [gattServer, subscription]);
 
   const handleConnect = useCallback(async () => {
-    if (!salt) {
-      setStatus("Please enter the encryption salt.");
-      return;
-    }
+    // Salt is pre-filled, so no need to check if it exists
 
     let server: BluetoothRemoteGATTServer | null = null;
     let newSubscription: Subscription | null = null;
@@ -78,7 +81,7 @@ const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) =>
 
       newSubscription = driver.events$.subscribe((event) => {
         if (event.type === "MOVE") {
-          setLastMove(`Move: ${event.move}`);
+          setMoves(prevMoves => [...prevMoves, event.move]);
         }
       });
 
@@ -88,12 +91,8 @@ const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) =>
         const value = target.value;
         if (value) {
           const rawValue = new Uint8Array(value.buffer);
-          const rawHexString = Array.from(rawValue).map(b => b.toString(16).padStart(2, '0')).join(' ');
-          setRawData(`Raw: ${rawHexString}`);
-
           const decrypted = encrypter.decrypt(rawValue);
           const decryptedHexString = Array.from(decrypted).map(b => b.toString(16).padStart(2, '0')).join(' ');
-          // console.log('Encrypted (Raw):', rawHexString);
           console.log('Decrypted:', decryptedHexString);
           setDecryptedData(`Decrypted: ${decryptedHexString}`)
 
@@ -135,21 +134,55 @@ const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) =>
     };
   }, [subscription, gattServer]);
 
+  const getStatusIndicatorColor = (status: string) => {
+    if (status.startsWith('Connected')) {
+      return 'bg-green-500';
+    }
+    if (status.startsWith('Error') || status === 'Disconnected') {
+      return 'bg-red-500';
+    }
+    if (status.includes('...')) {
+      return 'bg-yellow-500';
+    }
+    return 'bg-gray-500'; // Default color
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full">
-      <h1 className="text-2xl mb-4">Bluetooth Connection</h1>
-      <p className="mb-4">Status: {status}</p>
-      {rawData && <p className="mb-4 font-mono text-sm text-gray-500">{rawData}</p>}
-      {decryptedData && <p className="mb-4 font-mono text-sm text-gray-500">{decryptedData}</p>}
-      <p className="mb-4 font-mono text-lg">{"Last Move:" + lastMove}</p>
-      <div className="flex space-x-4">
-        <Button onClick={handleConnect} disabled={gattServer?.connected}>
-          Connect
-        </Button>
-        <Button onClick={handleDisconnect} disabled={!gattServer?.connected}>
-          Disconnect
-        </Button>
-        <Button onClick={backToMemoSetup}>Back to Memo Setup</Button>
+    <div className="flex flex-col h-full w-full p-4">
+      <div className="flex justify-between items-center mb-4">
+        <Button onClick={backToMemoSetup} variant="outline">Back</Button>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <div className={`w-3 h-3 rounded-full ${getStatusIndicatorColor(status)}`}></div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{status}</p>
+          </div>
+          {gattServer?.connected ? (
+            <Button onClick={handleDisconnect} variant="destructive">Disconnect</Button>
+          ) : (
+            <Button onClick={handleConnect} variant="secondary">Connect</Button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex-grow flex space-x-4">
+        {/* Last Move Section */}
+        <div className="w-48 flex-shrink-0 flex flex-col justify-center items-center border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+          <p className="font-mono text-5xl text-center h-16">
+            {moves.length > 0 ? moves[moves.length - 1] : "-"}
+          </p>
+          <h3 className="font-bold text-center">Last Move</h3>
+        </div>
+
+        {/* Move History Section */}
+        <div className="flex-grow flex flex-col border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+          <div className="flex justify-between items-baseline mb-2">
+            <h2 className="text-lg font-semibold">Move History</h2>
+            <Button onClick={handleClearMoves} disabled={moves.length === 0} variant="secondary" size="sm">Clear</Button>
+          </div>
+          <div className="flex-grow overflow-y-auto font-mono text-lg" style={{ wordBreak: 'break-word' }}>
+            {moves.map(move => move.length === 1 ? move + " " : move).join(" ")}
+          </div>
+        </div>
       </div>
     </div>
   );
