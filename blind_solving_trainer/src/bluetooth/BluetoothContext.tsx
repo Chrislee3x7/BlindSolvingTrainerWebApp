@@ -1,19 +1,20 @@
-
+import { puzzles } from 'cubing/puzzles';
+import { KPuzzle } from 'cubing/kpuzzle';
 import React, { createContext, useState, useCallback, useEffect, useContext } from 'react';
 import {
   GAN_ENCRYPTION_KEYS,
-  GanGen4CubeEncrypter,
-  GanGen4ProtocolDriver,
+  iCarry4CubeEncrypter,
+  iCarry4ProtocolDriver,
 } from '@/lib/gan-bluetooth';
 import { Subscription } from 'rxjs';
+import { CubeStateManager } from '@/lib/CubeState';
 
 interface BluetoothContextType {
   status: string;
-  moves: string[];
   handleConnect: () => void;
   handleDisconnect: () => void;
-  clearMoves: () => void;
-  lastMove?: string;
+  reset: () => void;
+  cubeState: CubeStateManager | null;
   isConnected: boolean;
 }
 
@@ -30,13 +31,26 @@ export const useBluetooth = () => {
 export const BluetoothProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [status, setStatus] = useState("Disconnected");
   const [isConnected, setIsConnected] = useState(false);
-  const [moves, setMoves] = useState<string[]>([]);
+  const [kpuzzle, setKpuzzle] = useState<KPuzzle | null>(null);
+  const [cubeState, setCubeState] = useState<CubeStateManager | null>(null);
   const [salt] = useState("B589BE5E3D0C"); // Pre-filled salt
   const [gattServer, setGattServer] = useState<BluetoothRemoteGATTServer | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
 
-  const clearMoves = () => {
-    setMoves([]);
+  useEffect(() => {
+    puzzles["3x3x3"].kpuzzle().then(setKpuzzle);
+  }, []);
+
+  useEffect(() => {
+    if (kpuzzle) {
+      setCubeState(new CubeStateManager(kpuzzle));
+    }
+  }, [kpuzzle]);
+
+  const reset = () => {
+    if (kpuzzle) {
+      setCubeState(new CubeStateManager(kpuzzle));
+    }
   };
 
   const handleDisconnect = useCallback(async () => {
@@ -48,7 +62,7 @@ export const BluetoothProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         subscription.unsubscribe();
         setSubscription(null);
       }
-      setMoves([]); // Clear moves on disconnect
+      reset(); // reset cube state on disconnect
       setStatus("Disconnected");
       setIsConnected(false);
     }
@@ -83,12 +97,15 @@ export const BluetoothProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       const keyToUse = GAN_ENCRYPTION_KEYS[0].key;
       const ivToUse = GAN_ENCRYPTION_KEYS[0].iv;
-      const encrypter = new GanGen4CubeEncrypter(new Uint8Array(keyToUse), new Uint8Array(ivToUse), saltBytes);
-      const driver = new GanGen4ProtocolDriver();
+      const encrypter = new iCarry4CubeEncrypter(new Uint8Array(keyToUse), new Uint8Array(ivToUse), saltBytes);
+      const driver = new iCarry4ProtocolDriver();
 
       newSubscription = driver.events$.subscribe((event) => {
         if (event.type === "MOVE") {
-          setMoves(prevMoves => [...prevMoves, event.move]);
+          setCubeState(prevState => {
+            if (!prevState) return null;
+            return prevState.applyMove(event.move);
+          });
         }
       });
 
@@ -139,10 +156,8 @@ export const BluetoothProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [subscription, gattServer]);
 
-  const lastMove = moves.length > 0 ? moves[moves.length - 1] : undefined;
-
   return (
-    <BluetoothContext.Provider value={{ status, moves, handleConnect, handleDisconnect, clearMoves, lastMove, isConnected }}>
+    <BluetoothContext.Provider value={{ status, handleConnect, handleDisconnect, reset, cubeState, isConnected }}>
       {children}
     </BluetoothContext.Provider>
   );

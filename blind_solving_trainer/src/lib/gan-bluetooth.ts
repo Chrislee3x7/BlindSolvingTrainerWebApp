@@ -3,7 +3,7 @@ import { Observable, Subject } from 'rxjs';
 
 // --- Start of gan-cube-definitions.ts content ---
 export const GAN_ENCRYPTION_KEYS = [
-    {   /** Key used by GAN Gen2, Gen3 and Gen4 cubes */
+    {   /** Key used by GAN Gen2, Gen3, Gen4 and iCarry4 cubes */
         key: [0x01, 0x02, 0x42, 0x28, 0x31, 0x91, 0x16, 0x07, 0x20, 0x05, 0x18, 0x54, 0x42, 0x11, 0x12, 0x53],
         iv: [0x11, 0x03, 0x32, 0x28, 0x21, 0x01, 0x76, 0x27, 0x20, 0x95, 0x78, 0x14, 0x32, 0x12, 0x02, 0x43]
     },
@@ -17,7 +17,7 @@ interface GanCubeEncrypter {
     decrypt(data: Uint8Array): Uint8Array;
 }
 
-class GanGen2CubeEncrypter implements GanCubeEncrypter {
+class GanCubeEncrypter implements GanCubeEncrypter {
     private _key: Uint8Array;
     private _iv: Uint8Array;
 
@@ -66,7 +66,7 @@ class GanGen2CubeEncrypter implements GanCubeEncrypter {
     }
 }
 
-export class GanGen4CubeEncrypter extends GanGen2CubeEncrypter { }
+export class iCarry4CubeEncrypter extends GanCubeEncrypter { }
 
 // --- End of gan-cube-encrypter.ts content ---
 
@@ -90,7 +90,7 @@ class GanProtocolMessageView {
     }
 }
 
-export class GanGen4ProtocolDriver {
+export class iCarry4ProtocolDriver {
     private lastSerial: number = -1;
     private lastMoveTimestamp: number = 0;
     private cubeTimestamp: number = 0;
@@ -102,7 +102,7 @@ export class GanGen4ProtocolDriver {
         if (data.length < 9 || data[1] !== 0x07) {
             return;
         }
-        console.log("Data dycrypted:", data);
+        // console.log("Data dycrypted:", data);
 
         const moveByte = data[8];
 
