@@ -14,7 +14,14 @@ export class CubeStateManager {
         const newPattern = this.pattern.applyAlg(move);
         const newCubeState = new CubeStateManager(this.kpuzzle);
         newCubeState.setPattern(newPattern);
-        newCubeState.moves = [...this.moves, move];
+
+        // @ts-ignore
+        if (newPattern.experimentalIsSolved({ ignoreCenterOrientation: true, ignorePuzzleOrientation: true })) {
+            newCubeState.moves = [];
+        } else {
+            newCubeState.moves = [...this.moves, move];
+        }
+
         return newCubeState;
     }
 

@@ -81,7 +81,7 @@ export const BluetoothProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       setStatus("Requesting Bluetooth device...");
       const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
+        filters: [{ namePrefix: 'GAN' }],
         optionalServices: ['00000010-0000-fff7-fff6-fff5fff4fff0'],
       });
 
