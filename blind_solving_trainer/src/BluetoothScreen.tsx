@@ -68,6 +68,7 @@ const BluetoothScreen: React.FC<BluetoothScreenProps> = ({ backToMemoSetup }) =>
               ref={playerRef}
               puzzle="3x3x3"
               camera-distance="6"
+              control-panel="none"
               className="w-full h-full"
             ></twisty-player>
           </div>
