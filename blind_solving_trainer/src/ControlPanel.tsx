@@ -12,9 +12,10 @@ type ControlPanelProps = {
   startTraining: () => void
   showCubeViz: () => void
   showBluetoothScreen: () => void
+  showTimerScreen: () => void
 }
 
-const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, resetToDefaultMemoScheme, startTraining, showCubeViz, showBluetoothScreen }) => {
+const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, resetToDefaultMemoScheme, startTraining, showCubeViz, showBluetoothScreen, showTimerScreen }) => {
 
   const { dialog: confirmResetMemoSchemeDialog } = useDialog();
   const { handleConnect, isConnected } = useBluetooth();
@@ -58,6 +59,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ toggleMemoMode, memoMode, r
         </Button>
         <Button onClick={showCubeViz}>
           <Label>Cube Viz</Label>
+        </Button>
+        <Button onClick={showTimerScreen}>
+          <Label>Timer</Label>
         </Button>
         <Button onClick={handleBluetoothClick}>
           <Label>{isConnected ? 'Bluetooth' : 'Connect Cube'}</Label>

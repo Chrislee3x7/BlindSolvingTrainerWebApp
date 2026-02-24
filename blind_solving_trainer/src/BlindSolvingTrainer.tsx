@@ -7,6 +7,7 @@ import TrainingScreen, { createDefaultTrainingSettings, TrainingSettings } from 
 import { useDialog } from "./dialog/useDialog";
 import { TrainingSetupForm } from './TrainingSetupForm'
 import CubeVizScreen from './CubeVizScreen';
+import TimerScreen from './TimerScreen';
 import BluetoothScreen from './BluetoothScreen';
 import StatusIndicator from './StatusIndicator';
 
@@ -80,6 +81,10 @@ function BlindSolvingTrainer() {
     setScreen("bluetooth-screen");
   }, [])
 
+  const showTimerScreen = useCallback(() => {
+    setScreen("timer");
+  }, [])
+
 
 
   return (
@@ -101,7 +106,8 @@ function BlindSolvingTrainer() {
             setMemoScheme={setMemoScheme}
             startTraining={handleStartTrainingClick}
             showCubeViz={showCubeViz}
-            showBluetoothScreen={showBluetoothScreen} />
+            showBluetoothScreen={showBluetoothScreen}
+            showTimerScreen={showTimerScreen} />
         </>
       }
       {screen == "training" &&
@@ -112,6 +118,9 @@ function BlindSolvingTrainer() {
       }
       {screen == "bluetooth-screen" &&
         <BluetoothScreen backToMemoSetup={() => { setScreen("memo-setup") }} />
+      }
+      {screen == "timer" &&
+        <TimerScreen backToMemoSetup={() => { setScreen("memo-setup") }} />
       }
     </div>
   )

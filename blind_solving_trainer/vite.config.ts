@@ -5,7 +5,13 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    target: 'esnext'
+  },
   optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext'
+    },
     include: ['cubing/twisty'],
   },
   plugins: [react(), tailwindcss()],
