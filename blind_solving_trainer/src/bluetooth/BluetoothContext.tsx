@@ -7,7 +7,7 @@ import {
   iCarry4ProtocolDriver,
 } from '@/lib/gan-bluetooth';
 import { Subscription } from 'rxjs';
-import { CubeStateManager } from '@/lib/CubeState';
+import { CubeStateManager } from '@/lib/CubeStateManager';
 
 interface BluetoothContextType {
   status: string;

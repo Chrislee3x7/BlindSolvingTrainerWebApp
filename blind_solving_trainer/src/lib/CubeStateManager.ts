@@ -1,3 +1,4 @@
+import { Move } from 'cubing/alg';
 import { KPattern, KPuzzle } from 'cubing/kpuzzle';
 
 export class CubeStateManager {
@@ -33,10 +34,20 @@ export class CubeStateManager {
         this.pattern = pattern;
     }
 
-
+    public getMoves(): string[] {
+        return this.moves;
+    }
 
     public getMovesString(): string {
         return this.moves.join(" ");
+    }
+
+    public getMoveCount(): number {
+        return this.moves.length;
+    }
+
+    public getLastMove(): Move {
+        return new Move(this.moves.length > 0 ? this.moves[this.moves.length - 1] : '');
     }
 
     public reset(): void {
